@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Console MJ">
+<meta name="theme-color" content="#c9a84c">
+<meta name="description" content="Outil Maître du Jeu — Die & Retry / Kagome Kagome">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>Die & Retry — Console MJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0906;
+    --bg2: #110f0c;
+    --bg3: #1a1714;
+    --bg4: #221f1b;
+    --border: #2e2924;
+    --border2: #3d3830;
+    --gold: #c9a84c;
+    --gold2: #e8c96e;
+    --gold-dim: #7a6530;
+    --text: #d4c9b8;
+    --text-dim: #7a7268;
+    --text-bright: #f0e8d8;
+    --red: #8b3a3a;
+    --red2: #c24a4a;
+    --green: #3a6b3a;
+    --green2: #5a9b5a;
+    --accent: #6b4c8b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .header-right {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* MAIN NAV */
+  .main-nav {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+  .nav-btn {
+    padding: 9px 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { color: var(--text); }
+  .nav-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* PANELS */
+  .panel {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  .panel.active { display: flex; }
+
+  /* SCROLL AREA */
+  .scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px;
+  }
+  .scroll::-webkit-scrollbar { width: 4px; }
+  .scroll::-webkit-scrollbar-track { background: var(--bg); }
+  .scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card:hover { border-color: var(--gold-dim); background: var(--bg3); }
+  .card.open { border-color: var(--gold); background: var(--bg3); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text-bright);
+  }
+  .card-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+  }
+  .card-body {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    line-height: 1.7;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .card.open .card-body { display: block; }
+  .card-body strong { color: var(--gold2); font-weight: 600; }
+  .card-body em { color: var(--text-dim); font-style: italic; }
+
+  /* FICHES LAYOUT */
+  .fiches-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  .fiches-sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    background: var(--bg2);
+    padding: 16px 0;
+  }
+  .fiches-sidebar::-webkit-scrollbar { width: 3px; }
+  .fiches-sidebar::-webkit-scrollbar-thumb { background: var(--border2); }
+  .fiche-cat {
+    padding: 6px 16px 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .fiche-link {
+    display: block;
+    padding: 7px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .fiche-link:hover { color: var(--text); background: var(--bg3); }
+  .fiche-link.active { color: var(--gold2); border-left-color: var(--gold); background: var(--bg3); }
+  .fiche-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+  .fiche-content::-webkit-scrollbar { width: 4px; }
+  .fiche-content::-webkit-scrollbar-thumb { background: var(--border2); }
+  .fiche-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .fiche-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .fiche-section {
+    margin-bottom: 18px;
+  }
+  .fiche-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .fiche-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text);
+  }
+  .fiche-text strong { color: var(--gold2); }
+  .tag-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    margin-right: 6px;
+    margin-top: 4px;
+  }
+  .tag-pill.carnibal { border-color: #5a2020; color: #c06060; }
+  .tag-pill.rosinante { border-color: #3a2a5a; color: #8a7acf; }
+  .tag-pill.police { border-color: #2a3a5a; color: #6a8acf; }
+  .tag-pill.neutre { border-color: var(--border2); color: var(--text-dim); }
+  .tag-pill.divin { border-color: #5a4a20; color: var(--gold); }
+  .pnj-list { list-style: none; }
+  .pnj-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .pnj-list li:last-child { border-bottom: none; }
+  .pnj-name { color: var(--text-bright); font-weight: 600; }
+
+  /* MUSIQUE */
+  .music-panel {
+    padding: 24px;
+    max-width: 700px;
+  }
+  .music-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .input-field {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--gold-dim); }
+  .input-field::placeholder { color: var(--text-dim); }
+  .btn {
+    padding: 10px 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--gold-dim);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--gold-dim); color: var(--bg); }
+  .btn.danger { border-color: var(--red); color: var(--red2); }
+  .btn.danger:hover { background: var(--red); color: var(--text-bright); }
+  .youtube-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .youtube-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+  .youtube-placeholder {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .youtube-placeholder .big-icon { font-size: 40px; margin-bottom: 8px; }
+  .music-queue { margin-top: 20px; }
+  .queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 6px;
+    background: var(--bg2);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .queue-item:hover { border-color: var(--gold-dim); color: var(--text); }
+  .queue-item.playing { border-color: var(--gold); color: var(--gold2); background: var(--bg3); }
+  .queue-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-actions { display: flex; gap: 6px; margin-left: 10px; }
+  .queue-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: color 0.15s;
+  }
+  .queue-btn:hover { color: var(--gold2); }
+  .queue-btn.del:hover { color: var(--red2); }
+
+  /* DÉS */
+  .dice-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .dice-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .dice-btn {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--border2);
+    border-radius: 8px;
+    background: var(--bg2);
+    color: var(--text);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .dice-btn:hover { border-color: var(--gold); color: var(--gold2); transform: translateY(-2px); }
+  .dice-btn:active { transform: translateY(0); }
+  .dice-icon { font-size: 28px; }
+  .dice-name { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+  .dice-result-area {
+    width: 100%;
+    max-width: 500px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .dice-result-num {
+    font-family: 'Cinzel', serif;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--gold);
+    transition: all 0.3s;
+  }
+  .dice-result-num.rolling { animation: rollAnim 0.4s ease; }
+  @keyframes rollAnim {
+    0% { transform: scale(0.5) rotate(-15deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .dice-result-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 6px;
+    font-family: 'Cinzel', serif;
+  }
+  .dice-result-verdict {
+    margin-top: 10px;
+    font-size: 14px;
+    font-style: italic;
+  }
+  .verdict-success { color: var(--green2); }
+  .verdict-fail { color: var(--red2); }
+  .dice-history {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 16px;
+  }
+  .dice-hist-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .dice-hist-row:first-child { border-top: 1px solid var(--border); }
+
+  /* NOTES */
+  .notes-panel {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    overflow-y: auto;
+    align-content: start;
+  }
+  .note-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+  }
+  .note-card-header {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .note-card-actions { display: flex; gap: 8px; }
+  .note-mini-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    transition: color 0.15s;
+  }
+  .note-mini-btn:hover { color: var(--gold2); }
+  .note-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    line-height: 1.7;
+    resize: none;
+    outline: none;
+    min-height: 180px;
+  }
+  .note-textarea::placeholder { color: var(--text-dim); font-style: italic; }
+  .note-add-row {
+    padding: 0 0 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .note-title-input {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    outline: none;
+    width: 200px;
+  }
+  .note-title-input:focus { border-color: var(--gold-dim); }
+
+  /* SOUNDBOARD */
+  .sound-panel {
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .sound-import-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .file-label {
+    padding: 10px 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .file-label:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .sound-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .sound-tile {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .sound-tile:hover { border-color: var(--gold-dim); background: var(--bg3); }
+  .sound-tile.playing { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.15); }
+  .sound-icon { font-size: 24px; margin-bottom: 6px; }
+  .sound-name {
+    font-size: 11px;
+    color: var(--text-dim);
+    word-break: break-word;
+    line-height: 1.4;
+  }
+  .sound-del {
+    position: absolute;
+    top: 5px; right: 6px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .sound-tile:hover .sound-del { opacity: 1; }
+  .sound-del:hover { color: var(--red2); }
+
+  /* PDF */
+  .pdf-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .pdf-top {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+  .pdf-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+  .pdf-tab {
+    padding: 6px 14px;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pdf-tab.active { border-color: var(--gold); color: var(--gold2); background: var(--bg3); }
+  .pdf-tab .close-x { color: var(--text-dim); font-size: 11px; }
+  .pdf-tab .close-x:hover { color: var(--red2); }
+  .pdf-viewer {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .pdf-viewer iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .pdf-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-dim);
+    text-align: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pdf-empty .big-icon { font-size: 40px; }
+
+  /* JOUEURS */
+  .joueurs-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    height: 100%;
+    overflow: hidden;
+  }
+  .joueurs-sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    background: var(--bg2);
+    padding: 16px 0;
+  }
+  .joueur-link {
+    display: block;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .joueur-link:hover { background: var(--bg3); }
+  .joueur-link.active { border-left-color: var(--gold); background: var(--bg3); }
+  .joueur-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--text-bright);
+  }
+  .joueur-char {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-style: italic;
+  }
+  .joueur-content {
+    overflow-y: auto;
+    padding: 24px 28px;
+    flex: 1;
+  }
+  .joueur-content::-webkit-scrollbar { width: 4px; }
+  .joueur-content::-webkit-scrollbar-thumb { background: var(--border2); }
+  .joueur-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .joueur-player {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 4px;
+  }
+  .joueur-title {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--gold);
+  }
+  .lore-box {
+    background: var(--bg3);
+    border-left: 2px solid var(--gold-dim);
+    padding: 14px 16px;
+    border-radius: 0 3px 3px 0;
+    font-size: 14px;
+    line-height: 1.75;
+    font-style: italic;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .rules-box {
+    background: var(--bg3);
+    border-left: 2px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 0 3px 3px 0;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .joueur-notes, .joueur-inventory {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 16px;
+  }
+  .joueur-notes-header, .joueur-inv-header {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .joueur-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+    min-height: 120px;
+  }
+  .joueur-textarea::placeholder { color: var(--text-dim); font-style: italic; }
+  .inv-add-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .inv-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    font-family: 'Crimson Pro', serif;
+  }
+  .inv-input:focus { border-color: var(--gold-dim); }
+  .inv-btn {
+    padding: 6px 12px;
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .inv-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .inv-list { padding: 6px 12px; }
+  .inv-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .inv-item:last-child { border-bottom: none; }
+  .inv-del {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    transition: color 0.15s;
+  }
+  .inv-del:hover { color: var(--red2); }
+
+  /* PWA safe area (encoche Android/iOS) */
+  body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
+  /* Bannière installation */
+  #pwa-install-banner {
+    display: none;
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 12px 18px;
+    align-items: center;
+    gap: 14px;
+    z-index: 9999;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    max-width: 360px;
+    width: calc(100% - 32px);
+  }
+  #pwa-install-banner p {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  #pwa-install-banner p strong { color: var(--gold2); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; }
+  #pwa-install-btn {
+    padding: 7px 14px;
+    background: var(--gold-dim);
+    border: none;
+    border-radius: 3px;
+    color: var(--bg);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #pwa-install-btn:hover { background: var(--gold); }
+  #pwa-install-dismiss {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px;
+  }
+
+  /* Clock */
+  #clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Die &amp; Retry — Console MJ</div>
+    <div class="header-sub">Chapitre II · Kagome Kagome</div>
+  </div>
+  <div class="header-right">
+    <div id="clock">--:--:--</div>
+    <div style="margin-top:2px; font-size:10px; color:var(--text-dim)">Portbay Valley</div>
+  </div>
+</div>
+
+<nav class="main-nav">
+  <button class="nav-btn active" onclick="showPanel('musique')">🎵 Musique</button>
+  <button class="nav-btn" onclick="showPanel('fiches')">📋 Fiches</button>
+  <button class="nav-btn" onclick="showPanel('joueurs')">🎭 Joueurs</button>
+  <button class="nav-btn" onclick="showPanel('des')">🎲 Dés</button>
+  <button class="nav-btn" onclick="showPanel('notes')">📝 Notes</button>
+  <button class="nav-btn" onclick="showPanel('sound')">🔊 Soundboard</button>
+  <button class="nav-btn" onclick="showPanel('pdf')">📄 PDF</button>
+</nav>
+
+<div class="main">
+
+  <!-- ======== MUSIQUE ======== -->
+  <div class="panel active" id="panel-musique">
+    <div class="scroll">
+      <div class="music-panel">
+        <div class="section-title">Lecteur YouTube</div>
+        <div class="music-input-row">
+          <input class="input-field" id="yt-url" placeholder="Coller une URL YouTube ici..." onkeydown="if(event.key==='Enter') loadYT()"/>
+          <input class="input-field" style="width:160px;flex:none;" id="yt-label" placeholder="Nom (optionnel)"/>
+          <button class="btn" onclick="loadYT()">Diffuser</button>
+          <button class="btn" onclick="addToQueue()">+ File</button>
+        </div>
+        <div class="youtube-container" id="yt-container">
+          <div class="youtube-placeholder">
+            <div class="big-icon">▶</div>
+            <div style="font-size:13px; color:var(--text-dim);">Coller une URL pour démarrer</div>
+          </div>
+        </div>
+        <div class="music-queue" id="yt-queue"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== FICHES ======== -->
+  <div class="panel" id="panel-fiches">
+    <div class="fiches-grid" style="display:grid; flex:1; overflow:hidden;">
+      <div class="fiches-sidebar">
+
+        <div class="fiche-cat">Lieux</div>
+        <div class="fiche-link" onclick="showFiche('port')">Le Port</div>
+        <div class="fiche-link" onclick="showFiche('commissariat')">Le Commissariat</div>
+        <div class="fiche-link" onclick="showFiche('goldmitaine')">Le Gold Mitaine</div>
+        <div class="fiche-link" onclick="showFiche('arene')">L'Arène Clandestine</div>
+        <div class="fiche-link" onclick="showFiche('domcarnibal')">Domaine Carnibal</div>
+        <div class="fiche-link" onclick="showFiche('domrosinante')">Domaine Rosinante</div>
+        <div class="fiche-link" onclick="showFiche('rosalia')">Le Rosalia</div>
+        <div class="fiche-link" onclick="showFiche('eglise')">Église Sainte Yihit</div>
+        <div class="fiche-link" onclick="showFiche('galerie')">Le Charme de Simonetta</div>
+
+        <div class="fiche-cat">Personnages</div>
+        <div class="fiche-link" onclick="showFiche('iscariote')">Commissaire Iscariote</div>
+        <div class="fiche-link" onclick="showFiche('elaine')">Elaine Carnibal</div>
+        <div class="fiche-link" onclick="showFiche('sigmurd')">Sigmurd Von Damielo</div>
+        <div class="fiche-link" onclick="showFiche('sylvia')">Sylvia Mole</div>
+
+        <div class="fiche-cat">Objets</div>
+        <div class="fiche-link" onclick="showFiche('ankh')">La Croix d'Ankh</div>
+        <div class="fiche-link" onclick="showFiche('sceptre')">Le Sceptre Ouas</div>
+
+        <div class="fiche-cat">Événements</div>
+        <div class="fiche-link" onclick="showFiche('vengeance')">Vengeance Carnibal</div>
+        <div class="fiche-link" onclick="showFiche('poursuite')">Course Poursuite</div>
+        <div class="fiche-link" onclick="showFiche('legiste')">Rencontre Légiste</div>
+      </div>
+      <div id="fiche-display" class="fiche-content">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;flex-direction:column;gap:10px;">
+          <div style="font-size:32px;">📋</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;">Sélectionner une fiche</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== JOUEURS ======== -->
+  <div class="panel" id="panel-joueurs">
+    <div class="joueurs-grid" style="display:grid; flex:1; overflow:hidden;">
+      <div class="joueurs-sidebar">
+        <div class="fiche-cat">Joueurs</div>
+        <div class="joueur-link" onclick="showJoueur('zmotick')">
+          <div class="joueur-name">Zmotick</div>
+          <div class="joueur-char">Capitaine Pill</div>
+        </div>
+        <div class="joueur-link" onclick="showJoueur('nj')">
+          <div class="joueur-name">NJ</div>
+          <div class="joueur-char">Nadia Mole</div>
+        </div>
+        <div class="joueur-link" onclick="showJoueur('luc')">
+          <div class="joueur-name">Luc</div>
+          <div class="joueur-char">Mickey Dawn</div>
+        </div>
+        <div class="joueur-link" onclick="showJoueur('julie')">
+          <div class="joueur-name">Julie</div>
+          <div class="joueur-char">Pietra Wolof</div>
+        </div>
+        <div class="joueur-link" onclick="showJoueur('gagane')">
+          <div class="joueur-name">Gagane</div>
+          <div class="joueur-char">Pamela Rosinante</div>
+        </div>
+      </div>
+      <div id="joueur-display" class="joueur-content">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;flex-direction:column;gap:10px;">
+          <div style="font-size:32px;">🎭</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;">Sélectionner un joueur</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== DÉS ======== -->
+  <div class="panel" id="panel-des">
+    <div class="scroll" style="display:flex;justify-content:center;">
+      <div class="dice-panel" style="width:100%;max-width:560px;">
+        <div class="section-title" style="width:100%;text-align:center;margin-bottom:24px;">Lancer les dés</div>
+        <div class="dice-row">
+          <button class="dice-btn" onclick="rollDice(6)">
+            <div class="dice-icon">⚄</div>
+            <div style="font-size:16px;font-family:'Cinzel',serif;">D6</div>
+            <div class="dice-name">Six faces</div>
+          </button>
+          <button class="dice-btn" onclick="rollDice(10)">
+            <div class="dice-icon">🎯</div>
+            <div style="font-size:16px;font-family:'Cinzel',serif;">D10</div>
+            <div class="dice-name">Dix faces</div>
+          </button>
+          <button class="dice-btn" onclick="rollDice(20)">
+            <div class="dice-icon">💎</div>
+            <div style="font-size:16px;font-family:'Cinzel',serif;">D20</div>
+            <div class="dice-name">Vingt faces</div>
+          </button>
+        </div>
+        <div class="dice-result-area">
+          <div class="dice-result-num" id="dice-num" style="color:var(--text-dim);font-size:40px;">—</div>
+          <div class="dice-result-label" id="dice-label">En attente</div>
+          <div class="dice-result-verdict" id="dice-verdict"></div>
+        </div>
+        <div class="dice-history" id="dice-history"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== NOTES ======== -->
+  <div class="panel" id="panel-notes">
+    <div style="padding:20px 20px 0; flex-shrink:0;">
+      <div class="section-title">Notes de session</div>
+      <div class="note-add-row">
+        <input class="note-title-input" id="note-new-title" placeholder="Titre de la note..." />
+        <button class="btn" onclick="addNote()">+ Nouvelle note</button>
+        <button class="btn danger" onclick="clearAllNotes()" style="margin-left:auto;">Effacer tout</button>
+      </div>
+    </div>
+    <div class="notes-panel" id="notes-container"></div>
+  </div>
+
+  <!-- ======== SOUNDBOARD ======== -->
+  <div class="panel" id="panel-sound">
+    <div class="scroll">
+      <div class="sound-panel">
+        <div class="section-title">Soundboard</div>
+        <div class="sound-import-row">
+          <label class="file-label" for="sound-file-input">📁 Importer un son</label>
+          <input type="file" id="sound-file-input" accept="audio/*" multiple style="display:none;" onchange="importSounds(event)"/>
+          <span style="font-size:12px;color:var(--text-dim);font-style:italic;">Formats supportés : mp3, wav, ogg, m4a</span>
+          <button class="btn danger" onclick="stopAllSounds()" style="margin-left:auto;">⏹ Stop tout</button>
+        </div>
+        <div class="sound-grid" id="sound-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;font-size:13px;">
+            Aucun son importé. Cliquez sur "Importer un son" pour commencer.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PDF ======== -->
+  <div class="panel" id="panel-pdf">
+    <div class="pdf-panel">
+      <div class="section-title">Visionneuse PDF</div>
+      <div class="pdf-top">
+        <label class="file-label" for="pdf-file-input">📄 Importer un PDF</label>
+        <input type="file" id="pdf-file-input" accept=".pdf" multiple style="display:none;" onchange="importPDFs(event)"/>
+      </div>
+      <div class="pdf-list" id="pdf-tabs"></div>
+      <div class="pdf-viewer" id="pdf-viewer">
+        <div class="pdf-empty">
+          <div class="big-icon">📄</div>
+          <div style="font-size:13px;color:var(--text-dim);">Importer un PDF pour l'afficher ici</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="pwa-install-banner">
+  <p><strong>Installer l'app</strong><br>Ajouter la Console MJ à votre écran d'accueil pour un accès hors ligne.</p>
+  <button id="pwa-install-btn">Installer</button>
+  <button id="pwa-install-dismiss">✕</button>
+</div>
+
+<script>
+// ===================== CLOCK =====================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('fr-FR');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===================== NAV =====================
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ===================== YOUTUBE =====================
+let ytQueue = JSON.parse(localStorage.getItem('yt_queue') || '[]');
+let ytCurrentIdx = -1;
+
+function extractYTId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+    return u.searchParams.get('v') || u.searchParams.get('list') ? null : null;
+  } catch(e) {
+    const m = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+}
+
+function getEmbedUrl(url) {
+  // Handle playlist
+  const listM = url.match(/list=([a-zA-Z0-9_-]+)/);
+  const vidM = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  let embed = 'https://www.youtube.com/embed/';
+  if (vidM) {
+    embed += vidM[1] + '?autoplay=1&rel=0';
+    if (listM) embed += '&list=' + listM[1];
+  } else if (listM) {
+    embed += 'videoseries?list=' + listM[1] + '&autoplay=1';
+  } else {
+    return null;
+  }
+  return embed;
+}
+
+function loadYT(url, label) {
+  const inputUrl = url || document.getElementById('yt-url').value.trim();
+  const inputLabel = label || document.getElementById('yt-label').value.trim() || inputUrl;
+  if (!inputUrl) return;
+  const embed = getEmbedUrl(inputUrl);
+  if (!embed) { alert('URL YouTube invalide'); return; }
+  const container = document.getElementById('yt-container');
+  container.innerHTML = `<iframe src="${embed}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  document.getElementById('yt-url').value = '';
+  document.getElementById('yt-label').value = '';
+}
+
+function addToQueue() {
+  const url = document.getElementById('yt-url').value.trim();
+  const label = document.getElementById('yt-label').value.trim() || url;
+  if (!url) return;
+  ytQueue.push({ url, label });
+  localStorage.setItem('yt_queue', JSON.stringify(ytQueue));
+  renderQueue();
+  document.getElementById('yt-url').value = '';
+  document.getElementById('yt-label').value = '';
+}
+
+function renderQueue() {
+  const el = document.getElementById('yt-queue');
+  if (!ytQueue.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="section-title" style="margin-top:16px;">File d'attente (${ytQueue.length})</div>` +
+    ytQueue.map((item, i) => `
+      <div class="queue-item ${i === ytCurrentIdx ? 'playing' : ''}" onclick="playFromQueue(${i})">
+        <span class="queue-label">${i===ytCurrentIdx ? '▶ ' : ''}${item.label}</span>
+        <div class="queue-actions">
+          <button class="queue-btn del" onclick="event.stopPropagation();removeFromQueue(${i})">✕</button>
+        </div>
+      </div>
+    `).join('');
+}
+
+function playFromQueue(i) {
+  ytCurrentIdx = i;
+  loadYT(ytQueue[i].url, ytQueue[i].label);
+  renderQueue();
+}
+
+function removeFromQueue(i) {
+  ytQueue.splice(i, 1);
+  localStorage.setItem('yt_queue', JSON.stringify(ytQueue));
+  renderQueue();
+}
+
+renderQueue();
+
+// ===================== FICHES =====================
+const fiches = {
+  port: {
+    title: 'Le Port', sub: 'Lieu · Mixte Carnibal / Rosinante',
+    tags: [['carnibal','Carnibal'],['rosinante','Rosinante']],
+    sections: [
+      { label: 'Ambiance', text: 'Humide, brumeux, bruyant.' },
+      { label: 'Espace', text: 'Un regroupement de préfabriqués accompagné d\'un amoncellement de conteneurs. Sur certains, l\'emblème d\'une rose ou d\'un sanglier. Trois pontons pour pêcheurs.' },
+      { label: 'PNJ', list: [
+        { name: 'Jimmy O\'Conel', desc: 'Docker ~40 ans. Travaille pour sa famille. Refuse les affaires louches.' },
+        { name: 'Phillipe Martins', desc: 'Docker ~30 ans. Célibataire sans ambition. Cherche une femme riche.' },
+        { name: 'Micha Loviensko', desc: 'Docker ~40 ans. Ancien cambrioleur. Veut vivre tranquille.' },
+      ]},
+      { label: 'Note MJ', text: 'Les trois dockers n\'ont rien vu des corps, mais savent que les deux familles utilisent le port pour des marchandises.' },
+    ]
+  },
+  commissariat: {
+    title: 'Le Commissariat', sub: 'Lieu · Police',
+    tags: [['police','Police']],
+    sections: [
+      { label: 'Ambiance', text: 'Lumière de néon blafarde, odeur de café. Cinq bureaux dans la pièce principale, dossiers et fournitures partout. Un couloir mène au bureau du Commissaire.' },
+      { label: 'Espace', text: 'Pièce principale + salle de repos + armurerie + bureau du Commissaire.' },
+      { label: 'PNJ', list: [
+        { name: 'Commissaire Arno Iscariote', desc: 'Voir fiche dédiée. Réceptacle de Seth durant le rêve.' },
+        { name: 'Capitaine Edward Pill', desc: '(Personnage de Zmotick)' },
+        { name: 'Adjudant Norbert "Nono" Pitichiet', desc: 'Bon gars, un peu simplet. Idolâtre le Capitaine Pill. Brun, cheveux courts, 1m70. Ne fera jamais rien qui porte atteinte à l\'honneur de la police.' },
+        { name: 'Officier Micha Puck', desc: '—' },
+        { name: 'Officière Noëlle Traoret', desc: '—' },
+        { name: 'Officier Nick Oloviestro', desc: '—' },
+      ]},
+    ]
+  },
+  goldmitaine: {
+    title: 'Le Gold Mitaine', sub: 'Lieu · Casino — Famille Carnibal',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Ambiance', text: 'Tabac et whisky frais. Lumière tamisée mais on ne manque rien. Une classe mondaine doublée d\'un danger silencieux.' },
+      { label: 'Espace', text: 'Vestibule → Bar (comptoir noyer, canapés rouges brodés sanglier d\'or, table poker) → Pièce centrale (BlackJack, machines à sous, table poker) → Stockage → escalier vers l\'Arène Clandestine.' },
+      { label: 'PNJ', list: [
+        { name: 'Ocho Malaviemiento', desc: 'Barman depuis 10 ans. Homme de confiance d\'Elaine. Manie une arme sans problème. Taille moy., chauve, yeux noirs.' },
+        { name: 'Viz', desc: 'Videur. Grand, musclé, métis. Père de 4 filles. Accord avec Elaine : sa famille est intouchable.' },
+        { name: 'Lou Valazur', desc: 'Croupière 25 ans. Rousse, yeux verts. Très vénale, remplace Sylvia.' },
+        { name: 'Magnolia Olta', desc: 'Directrice exécutive. Brune, taille moy. Entière confiance d\'Elaine. Gère tout.' },
+      ]},
+      { label: 'Accès Arène', text: 'Derrière le mur des machines à sous → salle de stockage → escalier au fond.' },
+    ]
+  },
+  arene: {
+    title: 'L\'Arène Clandestine', sub: 'Lieu · Famille Carnibal',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Accès', text: 'Escalier dans la réserve du Gold Mitaine.' },
+      { label: 'Ambiance', text: 'Odeur de fer, silence de plomb. Long couloir de portes métalliques. Ring encadré de grillages, taches de sang. Gradins et écrans géants.' },
+      { label: 'Espace', text: 'Couloir gris (5 portes de chaque côté) → Ring néon bleuté entouré de grillages → Gradins + écrans.' },
+      { label: 'PNJ', list: [
+        { name: 'D.Dice', desc: '27 ans. Gérant. Son vrai nom est inconnu même d\'Auguste. Boxe anglaise + couteaux. Aucune considération pour l\'humain.' },
+        { name: 'Jimmy', desc: '25 ans. Roux, irlandais. Bègue et timide. Lames de rasoir aux ongles. Instinct de tueur animal.' },
+        { name: 'Billy "Buffle"', desc: '21 ans. Blond, russe, petit et costaud. Lutteur. N\'hésite pas à mordre.' },
+        { name: 'Ana', desc: '21 ans. Experte taekwondo ITF. Généralement, ses pieds suffisent.' },
+        { name: 'Lola', desc: '16 ans. Afro-américaine. La plus jeune, un coup de poing = un coup de fusil.' },
+        { name: 'Yu', desc: '24 ans. Coréen, grand. Boxeur silencieux. Vitesse + points vitaux, pas la puissance.' },
+      ]},
+    ]
+  },
+  domcarnibal: {
+    title: 'Domaine Carnibal', sub: 'Lieu · Résidence Auguste Carnibal',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Ambiance', text: 'Simple. Pesante. Pouvoir.' },
+      { label: 'Espace', text: 'Manoir taillé dans l\'obsidienne. Deux statues du sanglier d\'Erymanthe encadrent l\'entrée. Hall avec chandeliers et œuvres d\'art. Salle de banquet (1er étage). Galerie personnelle d\'Auguste.' },
+      { label: 'Galerie (œuvres)', text: 'Les Noces de Cana (Véronèse), Stanczyck (Matejko), Œuf de Fabergé, Vestale voilée (Monti), Le Penseur (Rodin), Bastet, Mélancolie (Munch), Femmes au jardin (Monet), Marat assassiné (David), Victoire de Samothrace.' },
+      { label: 'PNJ', list: [
+        { name: 'Mathilda Ouktolos', desc: 'Femme de maison. Discrète, respectueuse. 5 ans de service, 30 ans.' },
+        { name: 'Arthur Furuos', desc: 'Homme de maison. Discret, respectueux. 25 ans de service, 55 ans.' },
+        { name: 'Philibert Nariosio', desc: 'Galeriste. Pervers, beau parleur. N\'apprécie pas Auguste. 65 ans.' },
+        { name: 'Ken & Lia Carnibal', desc: 'Hommes/Femmes de main. Anciens "enfants perdus". Donnent leur vie pour Auguste. 24 ans.' },
+      ]},
+    ]
+  },
+  domrosinante: {
+    title: 'Domaine Rosinante', sub: 'Lieu · Résidence Pio & Pietra Rosinante',
+    tags: [['rosinante','Rosinante']],
+    sections: [
+      { label: 'Ambiance', text: 'Écrasant. Puissant. Apaisant.' },
+      { label: 'Espace', text: 'Grand manoir pierres blanches. Intérieur blanc, rouge et or. Immense escalier marbre blanc surmonté d\'un portrait de Pio. Ligne d\'or sur tous les murs, roses rouges. Jardin : roses rouges et blanches, sépulture d\'Esmeralda Rosinante sous cloche de verre.' },
+      { label: 'PNJ', list: [
+        { name: 'Myria Sool', desc: 'Femme de maison. 40 ans de service, 62 ans.' },
+        { name: 'Dario Ouktolos', desc: 'Homme de maison. 25 ans de service, 50 ans.' },
+        { name: 'Ernest Poichon', desc: 'Jardinier. Lent mentalement mais habile. 50 ans de service, 66 ans.' },
+        { name: 'Sylvio & Luiji Arbuso', desc: 'Hommes de main. Respectueux, honorables. Donnent leur vie pour Pio.' },
+      ]},
+    ]
+  },
+  rosalia: {
+    title: 'Le Rosalia', sub: 'Lieu · Bar / Maison de joie — Famille Rosinante',
+    tags: [['rosinante','Rosinante']],
+    sections: [
+      { label: 'Ambiance', text: 'Effluves de roses, lumière dorée enveloppante. Gramophone jouant du jazz. Allers-venues d\'hommes et de femmes.' },
+      { label: 'Espace', text: 'RDC : bar en hêtre (mur du fond + gauche), tabourets, baie vitrée avec panier pour chat. Étage : couloir de 10 portes (5 chambres de chaque côté) → bureau de Pamela au fond.' },
+      { label: 'PNJ', list: [
+        { name: 'Camélia Mio', desc: 'Barista. Beauté naturelle. Amie d\'enfance de Pamela. Élancée, souriante, brune.' },
+        { name: 'Prima Lovanou', desc: 'La cadette. Franc-parlé. Petite, rousse, taches de rousseur. 1 an au Rosalia.' },
+        { name: 'Tamaria Novisiemento', desc: 'La doyenne. Grande sœur pour toutes. Blonde, grande. Excellente informatrice.' },
+        { name: 'Valéria Pavlova', desc: 'Ancienne Carnibal protégée par Pamela. Grande, brune. Sa survie prime tout.' },
+      ]},
+    ]
+  },
+  eglise: {
+    title: 'Église Sainte Yihit', sub: 'Lieu · Neutre',
+    tags: [['neutre','Neutre']],
+    sections: [
+      { label: 'Ambiance', text: 'La définition du calme. Votre respiration semble même déranger le lieu.' },
+      { label: 'Espace', text: 'Petite église. Pièce principale avec deux rangées de bancs face à une frise de vitraux (vie d\'un homme). Petit bureau dans un coin avec bibliothèque sur le monde invisible, la foi, l\'acceptation.' },
+      { label: 'PNJ', list: [
+        { name: 'Le Père Spencer', desc: 'Homme de principe, respecté dans toute la ville. L\'église est la seule zone neutre de Portbay Valley — aucun conflit de gangs n\'y est toléré.' },
+      ]},
+    ]
+  },
+  galerie: {
+    title: 'Le Charme de Simonetta', sub: 'Lieu · Galerie d\'art — Neutre',
+    tags: [['neutre','Neutre']],
+    sections: [
+      { label: 'Ambiance', text: 'Calme, sérénité, apaisement. Les tableaux attrapent les regards, prêts à livrer mille histoires.' },
+      { label: 'Espace', text: 'Bureau vitré simple (bureau en bois, ordinateur, tapisserie médiévale). Galerie : pièces majeures sur 3 piliers centraux, toiles sur le mur opposé à l\'entrée.' },
+      { label: 'Œuvres', text: 'Thor pêche Jormungand (Füssli), Dieu réprimandant Adam et Eve (Zampieri), Les Dieux sur l\'Olympe (Viani), Saturne dévorant son fils (Goya), Buddha et Gandhi (Husain), Stèle de Néfertiabet, La Dame à la Licorne, Circé (Waterhouse), La jeune fille et la mort (Levy), L\'île des Morts (Böcklin).' },
+    ]
+  },
+  iscariote: {
+    title: 'Commissaire Arno Iscariote', sub: 'Personnage · Police',
+    tags: [['police','Police'],['divin','Réceptacle Seth']],
+    sections: [
+      { label: 'Physique', text: 'Grand — Mat — Musclé' },
+      { label: 'Caractère', text: 'Homme de confiance, ancien militaire. Venu profiter d\'une retraite paisible à Portbay Valley où il a retrouvé son camarade d\'armée le Capitaine Pill. Grâce à leurs efforts conjugués, la ville résiste à la présence des deux Familles.' },
+      { label: '⚠ Note MJ', text: '<strong>Seth décide de se servir de lui comme réceptacle.</strong> Durant la présence des joueurs dans le rêve, Iscariote ne peut que subir la présence du Dieu Chtonien en lui. Il tient le Sceptre Ouas dans la main gauche lors de la scène finale.' },
+    ]
+  },
+  elaine: {
+    title: 'Elaine Carnibal', sub: 'Personnage · Famille Carnibal (décédée)',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Physique', text: 'Élancée — Regard froid — Pâle — Costume trois pièces — Tatouage sanglier dans le cou' },
+      { label: 'Caractère', text: 'Motivations : argent, pouvoir, respect (à sens unique). Quiconque s\'oppose à elle devient un ennemi, et un ennemi est une personne de trop. N\'hésitait pas à utiliser Sigmurd pour éliminer des opposants sur un coup de colère. Pouvait néanmoins montrer de la compassion envers les employés du Gold Mitaine ou Mickey.' },
+      { label: 'Activité', text: 'Gérait le Gold Mitaine pour la Famille Carnibal.' },
+    ]
+  },
+  sigmurd: {
+    title: 'Sigmurd Von Damielo', sub: 'Personnage · Tueur à gages Carnibal (décédé)',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Physique', text: 'Grand et maigre — Nez pointu — Petits yeux — Lunettes rondes branches fines — Cheveux longs et gras — Doigts longs et fins' },
+      { label: 'Histoire', text: 'Fasciné par la mort depuis l\'enfance. A tué un camarade de classe très jeune. À 17 ans : massacre familial (parents, grands-parents, sœur de 10 ans) lors du repas de Noël. Emprisonné, recruté par la Famille Carnibal dès 19 ans. A servi la famille jusqu\'à sa mort à 54 ans dans une ruelle.' },
+    ]
+  },
+  sylvia: {
+    title: 'Sylvia Mole', sub: 'Personnage · Gold Mitaine (décédée)',
+    tags: [['carnibal','Carnibal']],
+    sections: [
+      { label: 'Physique', text: 'Petite — Visage rond — Fumeuse — Blonde — Yeux noirs — Sourire simple' },
+      { label: 'Caractère', text: 'A toujours eu honte d\'elle-même, sentiment d\'infériorité (surtout face à sa sœur Nadia qu\'elle admire). A trouvé au Gold Mitaine un travail valorisant qui lui permettait de rêver de voyager. Ce mal-être lui a coûté la vie.' },
+      { label: 'Lien', text: 'Sœur de Nadia Mole (personnage de NJ).' },
+    ]
+  },
+  ankh: {
+    title: 'La Croix d\'Ankh', sub: 'Objet · Divin',
+    tags: [['divin','Divin']],
+    sections: [
+      { label: 'Origine', text: 'Symbole de l\'essence de vie dans la mythologie égyptienne. Bénédiction d\'Osiris et Isis pour son porteur.' },
+      { label: 'Obtention', text: 'Ne se trouve nulle part. Peut être offerte par la Moire ou Morphée selon le degré de confiance qu\'ils accordent aux joueurs.' },
+      { label: 'Pouvoirs', text: 'Guérison accélérée (si le porteur y place ses espoirs). Sert de réceptacle pour bannir le mal.' },
+      { label: 'Mécanique Seth', text: 'Pour expulser Seth : l\'immobiliser puis réciter : <em>"Ankh, symbole de vie, que celle qui s\'écoule en moi parjure le mal qui se confronte à moi. Ankh soit le tombeau du mal."</em> La croix passe de l\'or à l\'obsidienne (bon fonctionnement). Pour libérer l\'essence : briser la croix volontairement.' },
+    ]
+  },
+  sceptre: {
+    title: 'Le Sceptre Ouas', sub: 'Objet · Divin — Seth',
+    tags: [['divin','Divin']],
+    sections: [
+      { label: 'Description', text: 'Long bâton de bois parcouru de veines d\'or. Servait à extraire le venin des serpents.' },
+      { label: 'Obtention', text: 'Extension du bras de Seth, toujours avec lui même si invisible. Obtenable après avoir vaincu l\'incarnation de Seth. Reste dans l\'usine après le combat.' },
+      { label: 'Pouvoir de Seth', text: 'Permet à Seth de contrôler vents et foudres.' },
+      { label: 'Pouvoir joueur (si récupéré)', text: 'La personne qui le prend obtient un symbole à l\'intérieur de la main. Avec concentration et entraînement : génère une charge électrique. La douleur sera terrible au début.' },
+    ]
+  },
+  vengeance: {
+    title: 'La Vengeance Carnibal', sub: 'Événement',
+    tags: [],
+    sections: [
+      { label: 'Contexte', text: 'La Famille Carnibal a perdu Elaine. Règle appliquée : <strong>"un enfant pour un enfant"</strong>. Auguste n\'a plus d\'héritier, la Famille Rosinante a toujours Pamela. Auguste exprime sa tristesse et sa peur que la Famille Rosinante s\'impose en ville.' },
+      { label: 'Option 1 — Voiture piégée', text: 'D.Dice mobilise les enfants perdus pour faire exploser la voiture de Pamela Rosinante. Jet de Concentration au moment d\'approcher la voiture. Succès : bruit mécanique. Échec : rien. La bombe s\'active au contact. Conséquences : explosion avant, pare-brise en éclats, feu qui se propage, portières bloquées.' },
+      { label: 'Option 2 — Attentat sur le Rosalia', text: 'Même motivation de D.Dice. Une voiture fonce dans le Rosalia. Jet de Concentration. Succès : bruit de moteur qui approche. Échec : rien. Conséquences : explosion, murs qui s\'effondrent, souffle, feu, risque d\'effondrement de l\'étage.' },
+      { label: 'Note MJ', text: 'Cet événement peut exister de deux manières selon l\'humeur et l\'avancée du jeu.' },
+    ]
+  },
+  poursuite: {
+    title: 'La Course Poursuite', sub: 'Événement',
+    tags: [],
+    sections: [
+      { label: 'Déclencheur', text: 'Pitichiet prend en filature la voiture du groupe sur ordre du Capitaine Pill, croyant suivre le coupable.' },
+      { label: 'Déroulement', text: 'Course effrénée à travers Portbay Valley. Pitichiet tente de joindre son Capitaine par téléphone en parallèle.' },
+      { label: 'Note MJ', text: 'Bonne façon de forcer les joueurs à se rendre à un endroit précis si nécessaire.' },
+    ]
+  },
+  legiste: {
+    title: 'Rencontre avec le Légiste', sub: 'Événement',
+    tags: [],
+    sections: [
+      { label: 'Timing', text: 'Si les joueurs y vont juste après la scène d\'intro sur la plage, le Dr McCullen n\'aura que peu d\'informations.' },
+      { label: 'Lieu', text: 'Sas d\'entrée (bureau gris, pancarte "Occupé"). Salle d\'étude derrière (accessible seulement si un joueur pousse la porte).' },
+      { label: 'Dr Robert McCullen', text: 'Cheveux gris, 1m80, moustache, lunettes rectangulaires, blouse sur costume trois pièces vert. Pas loquace. Travaille seul. <strong>Croit que les humains ne disent la vérité qu\'une fois morts.</strong> Il est malade et le cache à sa fille.' },
+      { label: 'Comportement groupe complet', text: 'Sonde chaque personne. Fixe les figures Rosinante. Regard interrogateur au Capitaine. Selon la réponse du Capitaine : info partielle, info complète, ou prévient Iscariote dans le dos du groupe.' },
+      { label: 'Comportement Capitaine seul (±1)', text: 'Regard de jugement rapide puis fournit son travail et aide l\'enquête.' },
+    ]
+  },
+};
+
+function showFiche(id) {
+  document.querySelectorAll('.fiche-link').forEach(l => l.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const f = fiches[id];
+  if (!f) return;
+  const tags = f.tags.map(([cls, label]) => `<span class="tag-pill ${cls}">${label}</span>`).join('');
+  const sections = f.sections.map(s => {
+    if (s.list) {
+      return `<div class="fiche-section">
+        <div class="fiche-label">${s.label}</div>
+        <ul class="pnj-list">${s.list.map(p => `<li><span class="pnj-name">${p.name}</span> — ${p.desc}</li>`).join('')}</ul>
+      </div>`;
+    }
+    return `<div class="fiche-section">
+      <div class="fiche-label">${s.label}</div>
+      <div class="fiche-text">${s.text}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('fiche-display').innerHTML = `
+    <div class="fiche-title">${f.title}</div>
+    <div class="fiche-subtitle">${f.sub}</div>
+    <div style="margin-bottom:16px;">${tags}</div>
+    ${sections}
+  `;
+}
+
+// ===================== JOUEURS =====================
+const joueurs = {
+  zmotick: {
+    player: 'Zmotick', char: 'Capitaine Edward Pill',
+    intro: 'Ancien militaire reconverti dans la police de Portbay Valley. Homme de méthode et de confiance, il lutte chaque jour pour que la ville reste vivable malgré la pression des deux Familles. Ce matin, une affaire particulièrement sombre l\'attend au port.',
+    id: 'zmotick'
+  },
+  nj: {
+    player: 'NJ', char: 'Nadia Mole',
+    intro: 'Propriétaire d\'une boutique à Portbay Valley, elle n\'a pas dormi de la nuit depuis l\'appel de sa sœur Sylvia, qui travaillait au Gold Mitaine. Elle cherche des réponses, et l\'air marin du port ce matin lui en apportera peut-être.',
+    id: 'nj'
+  },
+  luc: {
+    player: 'Luc', char: 'Mickaël "Mickey" Dawn',
+    intro: 'Un homme qui encaisse aussi bien les coups physiques que ceux de la vie. Ce matin, les frères Gorilles lui ont rendu visite pour savoir où est Elaine. Il a menti, et maintenant il cherche à comprendre ce que signifient ces voitures de police qui filent vers la plage.',
+    id: 'luc'
+  },
+  julie: {
+    player: 'Julie', char: 'Pietra Wolof',
+    intro: 'Belle-mère de Pamela, envoyée par Pio Rosinante pour récolter des informations sur la disparition de Pierrot. Une femme qui incarne la puissance et le raffinement de la Famille Rosinante, même dans les situations les plus délicates.',
+    id: 'julie'
+  },
+  gagane: {
+    player: 'Gagane (Morgane)', char: 'Pamela Rosinante',
+    intro: 'Fille de Pio Rosinante, gérante du Rosalia. Ce matin, son père l\'a appelée : Pierrot, son frère, n\'est pas rentré. Son réseau lui indique que la police est en mouvement au port. Elle s\'y rend, mais trouve sa belle-mère sur place.',
+    id: 'gagane'
+  },
+};
+
+function showJoueur(id) {
+  document.querySelectorAll('.joueur-link').forEach(l => l.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const j = joueurs[id];
+  const notes = localStorage.getItem(`joueur_notes_${id}`) || '';
+  const invRaw = localStorage.getItem(`joueur_inv_${id}`) || '[]';
+  const inv = JSON.parse(invRaw);
+
+  document.getElementById('joueur-display').innerHTML = `
+    <div class="joueur-header">
+      <div class="joueur-player">Joueur · ${j.player}</div>
+      <div class="joueur-title">${j.char}</div>
+    </div>
+
+    <div class="fiche-section">
+      <div class="fiche-label">Présentation</div>
+      <div class="fiche-text">${j.intro}</div>
+    </div>
+
+    <div class="lore-box">
+      Vous incarnez un personnage vivant dans un rêve. Vous vous retrouvez ici sur ordre du dieu Morphée pour tenter de sauver l'esprit de votre ami.
+    </div>
+
+    <div class="rules-box">
+      <strong style="color:var(--gold2)">Règles :</strong> Vous êtes libres de vos actions. Pour en réaliser certaines, un lancé de dés vous sera demandé. Sentez-vous libre de proposer des actions.
+    </div>
+
+    <div class="joueur-notes">
+      <div class="joueur-notes-header">
+        Notes du personnage
+        <button class="inv-btn" onclick="saveJoueurNotes('${id}')">Sauvegarder</button>
+      </div>
+      <textarea class="joueur-textarea" id="joueur-notes-${id}" placeholder="Notes sur le personnage, événements marquants, relations...">${notes}</textarea>
+    </div>
+
+    <div class="joueur-inventory">
+      <div class="joueur-inv-header">Inventaire</div>
+      <div class="inv-list" id="inv-list-${id}">
+        ${inv.length === 0 ? '<div style="padding:8px 0;color:var(--text-dim);font-style:italic;font-size:13px;">Inventaire vide</div>' :
+          inv.map((item, i) => `
+            <div class="inv-item">
+              <span>${item}</span>
+              <button class="inv-del" onclick="removeInvItem('${id}', ${i})">✕</button>
+            </div>
+          `).join('')}
+      </div>
+      <div class="inv-add-row">
+        <input class="inv-input" id="inv-input-${id}" placeholder="Ajouter un objet..." onkeydown="if(event.key==='Enter') addInvItem('${id}')"/>
+        <button class="inv-btn" onclick="addInvItem('${id}')">Ajouter</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveJoueurNotes(id) {
+  const val = document.getElementById(`joueur-notes-${id}`).value;
+  localStorage.setItem(`joueur_notes_${id}`, val);
+  const btn = event.currentTarget;
+  const orig = btn.textContent;
+  btn.textContent = '✓ Sauvegardé';
+  setTimeout(() => btn.textContent = orig, 1500);
+}
+
+function addInvItem(id) {
+  const input = document.getElementById(`inv-input-${id}`);
+  const val = input.value.trim();
+  if (!val) return;
+  const inv = JSON.parse(localStorage.getItem(`joueur_inv_${id}`) || '[]');
+  inv.push(val);
+  localStorage.setItem(`joueur_inv_${id}`, JSON.stringify(inv));
+  input.value = '';
+  const activeLink = document.querySelector('.joueur-link.active');
+  if (activeLink) showJoueur(id);
+}
+
+function removeInvItem(id, idx) {
+  const inv = JSON.parse(localStorage.getItem(`joueur_inv_${id}`) || '[]');
+  inv.splice(idx, 1);
+  localStorage.setItem(`joueur_inv_${id}`, JSON.stringify(inv));
+  showJoueur(id);
+}
+
+// ===================== DÉS =====================
+let diceHistory = [];
+
+function rollDice(sides) {
+  const result = Math.floor(Math.random() * sides) + 1;
+  const numEl = document.getElementById('dice-num');
+  numEl.className = 'dice-result-num';
+  void numEl.offsetWidth;
+  numEl.className = 'dice-result-num rolling';
+  numEl.textContent = result;
+  document.getElementById('dice-label').textContent = `D${sides}`;
+
+  const verdict = document.getElementById('dice-verdict');
+  if (sides === 20) {
+    if (result === 20) { verdict.textContent = '✦ Succès Critique'; verdict.className = 'dice-result-verdict verdict-success'; }
+    else if (result === 1) { verdict.textContent = '✧ Échec Critique'; verdict.className = 'dice-result-verdict verdict-fail'; }
+    else if (result >= 12) { verdict.textContent = 'Succès'; verdict.className = 'dice-result-verdict verdict-success'; }
+    else { verdict.textContent = 'Échec'; verdict.className = 'dice-result-verdict verdict-fail'; }
+  } else if (sides === 10) {
+    if (result >= 7) { verdict.textContent = 'Succès'; verdict.className = 'dice-result-verdict verdict-success'; }
+    else { verdict.textContent = 'Échec'; verdict.className = 'dice-result-verdict verdict-fail'; }
+  } else {
+    if (result >= 4) { verdict.textContent = 'Succès'; verdict.className = 'dice-result-verdict verdict-success'; }
+    else { verdict.textContent = 'Échec'; verdict.className = 'dice-result-verdict verdict-fail'; }
+  }
+
+  const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  diceHistory.unshift({ sides, result, time: now });
+  if (diceHistory.length > 10) diceHistory.pop();
+
+  const histEl = document.getElementById('dice-history');
+  histEl.innerHTML = diceHistory.map(h => `
+    <div class="dice-hist-row">
+      <span>D${h.sides}</span>
+      <span style="color:var(--text-bright);font-weight:600;">${h.result}</span>
+      <span>${h.time}</span>
+    </div>
+  `).join('');
+}
+
+// ===================== NOTES =====================
+let notes = JSON.parse(localStorage.getItem('mj_notes') || '[]');
+
+function renderNotes() {
+  const container = document.getElementById('notes-container');
+  if (!notes.length) {
+    container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;">Aucune note. Créez votre première note ci-dessus.</div>`;
+    return;
+  }
+  container.innerHTML = notes.map((note, i) => `
+    <div class="note-card">
+      <div class="note-card-header">
+        ${note.title}
+        <div class="note-card-actions">
+          <button class="note-mini-btn" onclick="saveNote(${i})" title="Sauvegarder">💾</button>
+          <button class="note-mini-btn" onclick="deleteNote(${i})" title="Supprimer" style="color:var(--red2)">✕</button>
+        </div>
+      </div>
+      <textarea class="note-textarea" id="note-ta-${i}" onblur="autoSaveNote(${i})" placeholder="Écrire ici...">${note.content}</textarea>
+    </div>
+  `).join('');
+}
+
+function addNote() {
+  const title = document.getElementById('note-new-title').value.trim() || `Note ${notes.length + 1}`;
+  notes.push({ title, content: '' });
+  localStorage.setItem('mj_notes', JSON.stringify(notes));
+  document.getElementById('note-new-title').value = '';
+  renderNotes();
+}
+
+function saveNote(i) {
+  notes[i].content = document.getElementById(`note-ta-${i}`).value;
+  localStorage.setItem('mj_notes', JSON.stringify(notes));
+}
+
+function autoSaveNote(i) {
+  const el = document.getElementById(`note-ta-${i}`);
+  if (el) { notes[i].content = el.value; localStorage.setItem('mj_notes', JSON.stringify(notes)); }
+}
+
+function deleteNote(i) {
+  notes.splice(i, 1);
+  localStorage.setItem('mj_notes', JSON.stringify(notes));
+  renderNotes();
+}
+
+function clearAllNotes() {
+  if (confirm('Effacer toutes les notes ?')) {
+    notes = [];
+    localStorage.setItem('mj_notes', JSON.stringify(notes));
+    renderNotes();
+  }
+}
+
+renderNotes();
+
+// ===================== SOUNDBOARD =====================
+let sounds = [];
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function importSounds(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      sounds.push({ name: file.name.replace(/\.[^/.]+$/, ''), data: e.target.result, audio: null, playing: false });
+      renderSoundboard();
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function renderSoundboard() {
+  const grid = document.getElementById('sound-grid');
+  if (!sounds.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;font-size:13px;">Aucun son importé.</div>`;
+    return;
+  }
+  grid.innerHTML = sounds.map((s, i) => `
+    <div class="sound-tile ${s.playing ? 'playing' : ''}" onclick="toggleSound(${i})">
+      <button class="sound-del" onclick="event.stopPropagation();deleteSound(${i})">✕</button>
+      <div class="sound-icon">${s.playing ? '🔊' : '🔈'}</div>
+      <div class="sound-name">${s.name}</div>
+    </div>
+  `).join('');
+}
+
+function toggleSound(i) {
+  const s = sounds[i];
+  if (s.playing && s.audio) {
+    s.audio.pause();
+    s.audio.currentTime = 0;
+    s.playing = false;
+  } else {
+    if (s.audio) { s.audio.pause(); s.audio.currentTime = 0; }
+    s.audio = new Audio(s.data);
+    s.audio.onended = () => { s.playing = false; renderSoundboard(); };
+    s.audio.play();
+    s.playing = true;
+  }
+  renderSoundboard();
+}
+
+function deleteSound(i) {
+  if (sounds[i].audio) { sounds[i].audio.pause(); }
+  sounds.splice(i, 1);
+  renderSoundboard();
+}
+
+function stopAllSounds() {
+  sounds.forEach(s => { if (s.audio) { s.audio.pause(); s.audio.currentTime = 0; } s.playing = false; });
+  renderSoundboard();
+}
+
+// ===================== PDF =====================
+let pdfs = [];
+let activePdf = -1;
+
+function importPDFs(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const url = URL.createObjectURL(file);
+    pdfs.push({ name: file.name, url });
+    if (activePdf === -1) activePdf = pdfs.length - 1;
+  });
+  renderPDFs();
+  event.target.value = '';
+}
+
+function renderPDFs() {
+  const tabs = document.getElementById('pdf-tabs');
+  const viewer = document.getElementById('pdf-viewer');
+  if (!pdfs.length) {
+    tabs.innerHTML = '';
+    viewer.innerHTML = `<div class="pdf-empty"><div class="big-icon">📄</div><div style="font-size:13px;color:var(--text-dim);">Importer un PDF pour l'afficher ici</div></div>`;
+    return;
+  }
+  tabs.innerHTML = pdfs.map((p, i) => `
+    <div class="pdf-tab ${i === activePdf ? 'active' : ''}" onclick="switchPdf(${i})">
+      <span>${p.name}</span>
+      <span class="close-x" onclick="event.stopPropagation();closePdf(${i})">✕</span>
+    </div>
+  `).join('');
+  if (activePdf >= 0 && pdfs[activePdf]) {
+    viewer.innerHTML = `<iframe src="${pdfs[activePdf].url}#toolbar=1" type="application/pdf"></iframe>`;
+  }
+}
+
+function switchPdf(i) {
+  activePdf = i;
+  renderPDFs();
+}
+
+function closePdf(i) {
+  URL.revokeObjectURL(pdfs[i].url);
+  pdfs.splice(i, 1);
+  if (activePdf >= pdfs.length) activePdf = pdfs.length - 1;
+  renderPDFs();
+}
+
+// ===================== PWA =====================
+// Enregistrement du Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW enregistré :', reg.scope))
+      .catch(err => console.warn('SW échec :', err));
+  });
+}
+
+// Bannière d'installation PWA
+let deferredPrompt = null;
+const installBanner = document.getElementById('pwa-install-banner');
+const installBtn = document.getElementById('pwa-install-btn');
+const installDismiss = document.getElementById('pwa-install-dismiss');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBanner) installBanner.style.display = 'flex';
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (installBanner) installBanner.style.display = 'none';
+  });
+}
+
+if (installDismiss) {
+  installDismiss.addEventListener('click', () => {
+    if (installBanner) installBanner.style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if (installBanner) installBanner.style.display = 'none';
+  deferredPrompt = null;
+});
+</script>
+</body>
+</html>
