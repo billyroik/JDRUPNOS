@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Console MJ">
+<meta name="theme-color" content="#c9a84c">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Die & Retry — Console MJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0906;--bg2:#110f0c;--bg3:#1a1714;--bg4:#221f1b;--border:#2e2924;--border2:#3d3830;--gold:#c9a84c;--gold2:#e8c96e;--gold-dim:#7a6530;--text:#d4c9b8;--text-dim:#7a7268;--text-bright:#f0e8d8;--red:#8b3a3a;--red2:#c24a4a;--green:#3a6b3a;--green2:#5a9b5a;--accent:#6b4c8b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;font-size:15px;height:100vh;overflow:hidden;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px;}
+.header-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;}
+.header-sub{font-size:10px;color:var(--text-dim);letter-spacing:1px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+#weather-badge{font-size:20px;cursor:pointer;position:relative;}
+#weather-menu{display:none;position:absolute;top:32px;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:4px;z-index:200;min-width:160px;overflow:hidden;}
+#weather-menu.open{display:block;}
+.weather-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;transition:background .15s;}
+.weather-opt:hover{background:var(--bg3);}
+.weather-icon{font-size:18px;}
+#clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);}
+.main-nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.main-nav::-webkit-scrollbar{height:0;}
+.nav-btn{padding:9px 14px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.main{display:flex;flex:1;overflow:hidden;}
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.panel.active{display:flex;}
+.scroll{overflow-y:auto;flex:1;padding:16px;}
+.scroll::-webkit-scrollbar{width:4px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.section-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold-dim);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;}
+.btn{padding:9px 16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--gold-dim);background:transparent;color:var(--gold);cursor:pointer;border-radius:3px;transition:all .2s;white-space:nowrap;}
+.btn:hover{background:var(--gold-dim);color:var(--bg);}
+.btn.danger{border-color:var(--red);color:var(--red2);}
+.btn.danger:hover{background:var(--red);color:var(--text-bright);}
+.input-field{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
+.input-field:focus{border-color:var(--gold-dim);}
+.input-field::placeholder{color:var(--text-dim);}
+
+/* FICHES */
+.fiches-grid{display:grid;grid-template-columns:200px 1fr;height:100%;overflow:hidden;}
+.fiches-sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);padding:12px 0;}
+.fiches-sidebar::-webkit-scrollbar{width:3px;}
+.fiches-sidebar::-webkit-scrollbar-thumb{background:var(--border2);}
+.fiche-cat{padding:5px 14px 3px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-top:6px;}
+.fiche-link{display:block;padding:6px 14px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:all .15s;border-left:2px solid transparent;}
+.fiche-link:hover{color:var(--text);background:var(--bg3);}
+.fiche-link.active{color:var(--gold2);border-left-color:var(--gold);background:var(--bg3);}
+.fiche-content{overflow-y:auto;padding:20px 24px;}
+.fiche-content::-webkit-scrollbar{width:4px;}
+.fiche-content::-webkit-scrollbar-thumb{background:var(--border2);}
+.fiche-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:4px;}
+.fiche-subtitle{font-size:11px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.fiche-section{margin-bottom:16px;}
+.fiche-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:4px;}
+.fiche-text{font-size:14px;line-height:1.75;color:var(--text);}
+.fiche-text strong{color:var(--gold2);}
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--border2);border-radius:2px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);margin-right:6px;margin-top:4px;margin-bottom:10px;}
+.tag-pill.carnibal{border-color:#5a2020;color:#c06060;}
+.tag-pill.rosinante{border-color:#3a2a5a;color:#8a7acf;}
+.tag-pill.police{border-color:#2a3a5a;color:#6a8acf;}
+.tag-pill.neutre{border-color:var(--border2);color:var(--text-dim);}
+.tag-pill.divin{border-color:#5a4a20;color:var(--gold);}
+.pnj-list{list-style:none;}
+.pnj-list li{padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;}
+.pnj-list li:last-child{border-bottom:none;}
+.pnj-name{color:var(--text-bright);font-weight:600;}
+
+/* MUSIQUE */
+.music-input-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.youtube-container{position:relative;width:100%;max-width:640px;padding-bottom:min(360px,56.25%);background:var(--bg3);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.youtube-container iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.youtube-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-dim);}
+.queue-item{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border:1px solid var(--border);border-radius:3px;margin-bottom:5px;background:var(--bg2);font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);cursor:pointer;transition:all .15s;}
+.queue-item:hover{border-color:var(--gold-dim);color:var(--text);}
+.queue-item.playing{border-color:var(--gold);color:var(--gold2);background:var(--bg3);}
+.queue-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.queue-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:2px 4px;transition:color .15s;}
+.queue-btn:hover{color:var(--gold2);}
+.queue-btn.del:hover{color:var(--red2);}
+
+/* DÉS */
+.dice-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.dice-btn{width:90px;height:90px;border:2px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);font-family:'Cinzel',serif;font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all .2s;}
+.dice-btn:hover{border-color:var(--gold);color:var(--gold2);transform:translateY(-2px);}
+.dice-btn:active{transform:translateY(0);}
+.dice-icon{font-size:24px;}
+.dice-name{font-size:9px;letter-spacing:2px;color:var(--text-dim);}
+.dice-result-area{width:100%;max-width:460px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;text-align:center;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.dice-result-num{font-family:'Cinzel',serif;font-size:64px;line-height:1;color:var(--gold);transition:all .3s;}
+.dice-result-num.rolling{animation:rollAnim .4s ease;}
+@keyframes rollAnim{0%{transform:scale(.5) rotate(-15deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
+.dice-result-label{font-size:10px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-top:4px;font-family:'Cinzel',serif;}
+.dice-result-verdict{margin-top:8px;font-size:13px;font-style:italic;}
+.verdict-success{color:var(--green2);}
+.verdict-fail{color:var(--red2);}
+.dice-hist-row{display:flex;justify-content:space-between;padding:4px 10px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
+.dice-hist-row:first-child{border-top:1px solid var(--border);}
+.threshold-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.threshold-label{font-size:12px;color:var(--text-dim);font-family:'Cinzel',serif;letter-spacing:1px;}
+.threshold-select{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:5px 10px;color:var(--text);font-size:12px;outline:none;}
+
+/* NOTES */
+.notes-toolbar{padding:12px 16px 0;flex-shrink:0;}
+.notes-search-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px;overflow-y:auto;align-content:start;}
+.note-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;display:flex;flex-direction:column;}
+.note-card-header{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.note-card-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.note-tag-badge{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.note-mini-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;transition:color .15s;padding:1px 3px;}
+.note-mini-btn:hover{color:var(--gold2);}
+.note-textarea{flex:1;background:transparent;border:none;padding:10px;color:var(--text);font-family:'Crimson Pro',serif;font-size:13px;line-height:1.7;resize:none;outline:none;min-height:150px;}
+.note-textarea::placeholder{color:var(--text-dim);font-style:italic;}
+.tag-selector{display:flex;gap:6px;align-items:center;}
+.tag-dot{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0;}
+.tag-dot:hover,.tag-dot.selected{border-color:var(--text-bright);}
+.notes-search{flex:1;min-width:160px;}
+
+/* SOUNDBOARD */
+.sound-import-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.file-label{padding:9px 16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--border2);background:var(--bg2);color:var(--text-dim);cursor:pointer;border-radius:3px;transition:all .2s;}
+.file-label:hover{border-color:var(--gold-dim);color:var(--gold);}
+.sound-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+.sound-tile{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:12px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.sound-tile:hover{border-color:var(--gold-dim);background:var(--bg3);}
+.sound-tile.playing{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.15);}
+.sound-icon{font-size:22px;margin-bottom:5px;}
+.sound-name{font-size:11px;color:var(--text-dim);word-break:break-word;line-height:1.3;margin-bottom:8px;}
+.sound-vol{width:100%;accent-color:var(--gold);height:3px;cursor:pointer;margin-top:4px;}
+.sound-del{position:absolute;top:4px;right:5px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;opacity:0;transition:opacity .15s;}
+.sound-tile:hover .sound-del{opacity:1;}
+.sound-del:hover{color:var(--red2);}
+
+/* PDF */
+.pdf-top{display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;flex-wrap:wrap;}
+.pdf-list{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0;}
+.pdf-tab{padding:5px 12px;border:1px solid var(--border2);background:var(--bg2);color:var(--text-dim);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:3px;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.pdf-tab.active{border-color:var(--gold);color:var(--gold2);background:var(--bg3);}
+.pdf-tab .close-x{color:var(--text-dim);font-size:10px;}
+.pdf-tab .close-x:hover{color:var(--red2);}
+.pdf-viewer{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.pdf-viewer iframe{width:100%;height:100%;border:none;}
+.pdf-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;flex-direction:column;gap:10px;}
+
+/* JOUEURS */
+.joueurs-grid{display:grid;grid-template-columns:180px 1fr;height:100%;overflow:hidden;}
+.joueurs-sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);padding:12px 0;}
+.joueur-link{display:block;padding:9px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;}
+.joueur-link:hover{background:var(--bg3);}
+.joueur-link.active{border-left-color:var(--gold);background:var(--bg3);}
+.joueur-name{font-family:'Cinzel',serif;font-size:12px;color:var(--text-bright);}
+.joueur-char{font-size:11px;color:var(--text-dim);margin-top:1px;font-style:italic;}
+.joueur-content{overflow-y:auto;padding:20px 24px;}
+.joueur-content::-webkit-scrollbar{width:4px;}
+.joueur-content::-webkit-scrollbar-thumb{background:var(--border2);}
+.joueur-player{font-size:10px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;font-family:'Cinzel',serif;margin-bottom:3px;}
+.joueur-title{font-family:'Cinzel',serif;font-size:20px;color:var(--gold);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.lore-box{background:var(--bg3);border-left:2px solid var(--gold-dim);padding:12px 14px;border-radius:0 3px 3px 0;font-size:13px;line-height:1.75;font-style:italic;color:var(--text);margin-bottom:12px;}
+.rules-box{background:var(--bg3);border-left:2px solid var(--accent);padding:12px 14px;border-radius:0 3px 3px 0;font-size:13px;line-height:1.75;color:var(--text);margin-bottom:14px;}
+.joueur-block{background:var(--bg2);border:1px solid var(--border);border-radius:3px;margin-bottom:12px;}
+.joueur-block-header{padding:7px 12px;border-bottom:1px solid var(--border);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold-dim);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+.joueur-textarea{width:100%;background:transparent;border:none;padding:10px 12px;color:var(--text);font-family:'Crimson Pro',serif;font-size:13px;line-height:1.7;resize:vertical;outline:none;min-height:100px;}
+.joueur-textarea::placeholder{color:var(--text-dim);font-style:italic;}
+.inv-add-row{display:flex;gap:6px;padding:7px 10px;border-top:1px solid var(--border);}
+.inv-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;padding:5px 9px;color:var(--text);font-size:13px;outline:none;font-family:'Crimson Pro',serif;}
+.inv-input:focus{border-color:var(--gold-dim);}
+.inv-btn{padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--text-dim);cursor:pointer;font-size:12px;transition:all .15s;}
+.inv-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.inv-list{padding:4px 10px;}
+.inv-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.inv-item:last-child{border-bottom:none;}
+.inv-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;transition:color .15s;}
+.inv-del:hover{color:var(--red2);}
+.qr-area{padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+#qr-canvas{border:1px solid var(--border);border-radius:3px;}
+.qr-url{font-size:11px;color:var(--text-dim);text-align:center;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+
+/* CARTE */
+.map-container{position:relative;flex:1;overflow:hidden;background:#0a0906;}
+.map-img{width:100%;height:100%;object-fit:contain;display:block;}
+.map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:10;transition:transform .2s;}
+.map-pin:hover{transform:translate(-50%,-100%) scale(1.2);}
+.map-pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--gold);background:rgba(201,168,76,.4);margin:0 auto;}
+.map-pin-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--gold2);text-align:center;white-space:nowrap;margin-top:2px;text-shadow:0 1px 3px #000,0 0 6px #000;}
+.map-pin.carnibal .map-pin-dot{border-color:#c06060;background:rgba(192,96,96,.4);}
+.map-pin.carnibal .map-pin-label{color:#e08080;}
+.map-pin.rosinante .map-pin-dot{border-color:#8a7acf;background:rgba(138,122,207,.4);}
+.map-pin.rosinante .map-pin-label{color:#a898e8;}
+.map-pin.police .map-pin-dot{border-color:#6a8acf;background:rgba(106,138,207,.4);}
+.map-pin.police .map-pin-label{color:#8aaadf;}
+.map-popup{position:absolute;background:var(--bg2);border:1px solid var(--gold);border-radius:4px;padding:12px 14px;z-index:20;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,.7);pointer-events:none;}
+.map-popup-title{font-family:'Cinzel',serif;font-size:12px;color:var(--gold2);margin-bottom:4px;}
+.map-popup-sub{font-size:11px;color:var(--text-dim);margin-bottom:6px;}
+.map-popup-hint{font-size:11px;color:var(--text-dim);font-style:italic;}
+.map-popup-close{pointer-events:all;position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;}
+.map-popup-goto{pointer-events:all;display:inline-block;margin-top:8px;padding:4px 10px;border:1px solid var(--gold-dim);border-radius:2px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--gold);cursor:pointer;background:none;transition:all .15s;}
+.map-popup-goto:hover{background:var(--gold-dim);color:var(--bg);}
+
+/* MINUTEUR */
+.timer-panel{display:flex;flex-direction:column;align-items:center;padding:20px;gap:16px;}
+.timer-display{font-family:'Cinzel',serif;font-size:72px;color:var(--gold);letter-spacing:4px;line-height:1;text-align:center;}
+.timer-display.urgent{color:var(--red2);animation:timerPulse 1s ease infinite;}
+@keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.timer-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.timer-presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.timer-preset{padding:7px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;color:var(--text-dim);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .15s;}
+.timer-preset:hover{border-color:var(--gold-dim);color:var(--gold);}
+.timer-input-row{display:flex;gap:8px;align-items:center;}
+.timer-input{width:60px;text-align:center;font-family:'Cinzel',serif;font-size:16px;}
+.timer-label{font-size:12px;color:var(--text-dim);}
+.timer-progress{width:100%;max-width:400px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.timer-progress-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .5s linear;}
+.timer-progress-bar.urgent{background:var(--red2);}
+
+/* PWA BANNER */
+#pwa-install-banner{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--gold);border-radius:6px;padding:12px 16px;align-items:center;gap:12px;z-index:999;box-shadow:0 4px 24px rgba(0,0,0,.6);max-width:340px;width:calc(100% - 32px);}
+#pwa-install-banner p{flex:1;font-size:12px;color:var(--text);line-height:1.4;}
+#pwa-install-banner p strong{color:var(--gold2);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;}
+#pwa-install-btn{padding:6px 12px;background:var(--gold-dim);border:none;border-radius:3px;color:var(--bg);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;cursor:pointer;white-space:nowrap;}
+#pwa-install-dismiss{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:15px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Die &amp; Retry</div>
+    <div class="header-sub">Console MJ · Kagome Kagome</div>
+  </div>
+  <div class="header-right">
+    <div id="weather-badge" title="Conditions météo" onclick="toggleWeatherMenu()">🌫️</div>
+    <div id="weather-menu">
+      <div class="weather-opt" onclick="setWeather('🌫️','Brume')"><span class="weather-icon">🌫️</span>Brume</div>
+      <div class="weather-opt" onclick="setWeather('🌧️','Pluie')"><span class="weather-icon">🌧️</span>Pluie</div>
+      <div class="weather-opt" onclick="setWeather('⛈️','Orage')"><span class="weather-icon">⛈️</span>Orage</div>
+      <div class="weather-opt" onclick="setWeather('🌙','Nuit')"><span class="weather-icon">🌙</span>Nuit calme</div>
+      <div class="weather-opt" onclick="setWeather('☀️','Jour')"><span class="weather-icon">☀️</span>Jour calme</div>
+      <div class="weather-opt" onclick="setWeather('🌊','Mer agitée')"><span class="weather-icon">🌊</span>Mer agitée</div>
+      <div class="weather-opt" onclick="setWeather('🔥','Tension')"><span class="weather-icon">🔥</span>Tension</div>
+    </div>
+    <div id="clock">--:--:--</div>
+  </div>
+</div>
+
+<nav class="main-nav">
+  <button class="nav-btn active" onclick="showPanel('musique',this)">🎵 Musique</button>
+  <button class="nav-btn" onclick="showPanel('carte',this)">🗺 Carte</button>
+  <button class="nav-btn" onclick="showPanel('fiches',this)">📋 Fiches</button>
+  <button class="nav-btn" onclick="showPanel('joueurs',this)">🎭 Joueurs</button>
+  <button class="nav-btn" onclick="showPanel('des',this)">🎲 Dés</button>
+  <button class="nav-btn" onclick="showPanel('timer',this)">⏱ Timer</button>
+  <button class="nav-btn" onclick="showPanel('notes',this)">📝 Notes</button>
+  <button class="nav-btn" onclick="showPanel('sound',this)">🔊 Sons</button>
+  <button class="nav-btn" onclick="showPanel('pdf',this)">📄 PDF</button>
+  <button class="nav-btn" id="nav-messages" onclick="showPanel('messages',this)">✉ Messages</button>
+</nav>
+
+<div class="main">
+
+<!-- MUSIQUE -->
+<div class="panel active" id="panel-musique">
+  <div class="scroll">
+    <div style="max-width:640px;">
+      <div class="section-title">Lecteur YouTube</div>
+      <div class="music-input-row">
+        <input class="input-field" id="yt-url" placeholder="URL YouTube..." style="flex:1;" onkeydown="if(event.key==='Enter')loadYT()"/>
+        <input class="input-field" id="yt-label" placeholder="Nom..." style="width:130px;"/>
+        <button class="btn" onclick="loadYT()">▶ Diffuser</button>
+        <button class="btn" onclick="addToQueue()">+ File</button>
+      </div>
+      <div class="youtube-container" id="yt-container">
+        <div class="youtube-placeholder"><div style="font-size:36px;">▶</div><div style="font-size:12px;margin-top:6px;">Coller une URL pour démarrer</div></div>
+      </div>
+      <div id="yt-queue"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CARTE -->
+<div class="panel" id="panel-carte">
+  <div class="map-container" id="map-wrap">
+    <img id="map-img" class="map-img" alt="Carte de Portbay Valley"/>
+    <div id="map-pins"></div>
+    <div id="map-popup" style="display:none;" class="map-popup">
+      <button class="map-popup-close" onclick="closePopup()">✕</button>
+      <div class="map-popup-title" id="popup-title"></div>
+      <div class="map-popup-sub" id="popup-sub"></div>
+      <div class="map-popup-hint" id="popup-hint"></div>
+      <button class="map-popup-goto" id="popup-goto">Voir la fiche →</button>
+    </div>
+    <div id="map-upload-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);flex-direction:column;gap:14px;">
+      <div style="font-size:40px;">🗺</div>
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;color:var(--gold);">Charger la carte</div>
+      <div style="font-size:12px;color:var(--text-dim);text-align:center;max-width:260px;">Importez l'image de Portbay Valley pour afficher les marqueurs</div>
+      <label class="file-label" for="map-file-input">📁 Importer l'image</label>
+      <input type="file" id="map-file-input" accept="image/*" style="display:none;" onchange="loadMapImage(event)"/>
+    </div>
+  </div>
+</div>
+
+<!-- FICHES -->
+<div class="panel" id="panel-fiches">
+  <div class="fiches-grid" style="display:grid;flex:1;overflow:hidden;">
+    <div class="fiches-sidebar">
+      <div class="fiche-cat">Lieux</div>
+      <div class="fiche-link" onclick="showFiche('port',this)">Le Port</div>
+      <div class="fiche-link" onclick="showFiche('commissariat',this)">Le Commissariat</div>
+      <div class="fiche-link" onclick="showFiche('goldmitaine',this)">Le Gold Mitaine</div>
+      <div class="fiche-link" onclick="showFiche('arene',this)">L'Arène Clandestine</div>
+      <div class="fiche-link" onclick="showFiche('domcarnibal',this)">Domaine Carnibal</div>
+      <div class="fiche-link" onclick="showFiche('domrosinante',this)">Domaine Rosinante</div>
+      <div class="fiche-link" onclick="showFiche('rosalia',this)">Le Rosalia</div>
+      <div class="fiche-link" onclick="showFiche('eglise',this)">Église Sainte Yihit</div>
+      <div class="fiche-link" onclick="showFiche('galerie',this)">Charme de Simonetta</div>
+      <div class="fiche-link" onclick="showFiche('usine',this)">Usine de Textile</div>
+      <div class="fiche-cat">Personnages</div>
+      <div class="fiche-link" onclick="showFiche('iscariote',this)">Commissaire Iscariote</div>
+      <div class="fiche-link" onclick="showFiche('elaine',this)">Elaine Carnibal</div>
+      <div class="fiche-link" onclick="showFiche('sigmurd',this)">Sigmurd Von Damielo</div>
+      <div class="fiche-link" onclick="showFiche('sylvia',this)">Sylvia Mole</div>
+      <div class="fiche-cat">Objets</div>
+      <div class="fiche-link" onclick="showFiche('ankh',this)">La Croix d'Ankh</div>
+      <div class="fiche-link" onclick="showFiche('sceptre',this)">Le Sceptre Ouas</div>
+      <div class="fiche-cat">Événements</div>
+      <div class="fiche-link" onclick="showFiche('vengeance',this)">Vengeance Carnibal</div>
+      <div class="fiche-link" onclick="showFiche('poursuite',this)">Course Poursuite</div>
+      <div class="fiche-link" onclick="showFiche('legiste',this)">Rencontre Légiste</div>
+    </div>
+    <div id="fiche-display" class="fiche-content">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;flex-direction:column;gap:10px;"><div style="font-size:32px;">📋</div><div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;">Sélectionner une fiche</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- JOUEURS -->
+<div class="panel" id="panel-joueurs">
+  <div class="joueurs-grid" style="display:grid;flex:1;overflow:hidden;">
+    <div class="joueurs-sidebar">
+      <div class="fiche-cat">Joueurs</div>
+      <div class="joueur-link" onclick="showJoueur('zmotick',this)"><div class="joueur-name">Zmotick</div><div class="joueur-char">Cpt. Pill</div></div>
+      <div class="joueur-link" onclick="showJoueur('nj',this)"><div class="joueur-name">NJ</div><div class="joueur-char">Nadia Mole</div></div>
+      <div class="joueur-link" onclick="showJoueur('luc',this)"><div class="joueur-name">Luc</div><div class="joueur-char">Mickey Dawn</div></div>
+      <div class="joueur-link" onclick="showJoueur('julie',this)"><div class="joueur-name">Julie</div><div class="joueur-char">Pietra Wolof</div></div>
+      <div class="joueur-link" onclick="showJoueur('gagane',this)"><div class="joueur-name">Gagane</div><div class="joueur-char">Pamela Rosinante</div></div>
+    </div>
+    <div id="joueur-display" class="joueur-content">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;flex-direction:column;gap:10px;"><div style="font-size:32px;">🎭</div><div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;">Sélectionner un joueur</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DÉS -->
+<div class="panel" id="panel-des">
+  <div class="scroll" style="display:flex;justify-content:center;">
+    <div style="width:100%;max-width:500px;">
+      <div class="section-title">Lancer les dés</div>
+      <div class="threshold-row">
+        <span class="threshold-label">Seuil de succès</span>
+        <select class="threshold-select" id="threshold-d6"><option value="4">D6 ≥ 4</option><option value="3">D6 ≥ 3</option><option value="5">D6 ≥ 5</option></select>
+        <select class="threshold-select" id="threshold-d10"><option value="7">D10 ≥ 7</option><option value="6">D10 ≥ 6</option><option value="8">D10 ≥ 8</option></select>
+        <select class="threshold-select" id="threshold-d20"><option value="12">D20 ≥ 12</option><option value="10">D20 ≥ 10</option><option value="15">D20 ≥ 15</option></select>
+      </div>
+      <div class="dice-row">
+        <button class="dice-btn" onclick="rollDice(6)"><div class="dice-icon">⚄</div><div style="font-size:15px;font-family:'Cinzel',serif;">D6</div><div class="dice-name">Six faces</div></button>
+        <button class="dice-btn" onclick="rollDice(10)"><div class="dice-icon">🎯</div><div style="font-size:15px;font-family:'Cinzel',serif;">D10</div><div class="dice-name">Dix faces</div></button>
+        <button class="dice-btn" onclick="rollDice(20)"><div class="dice-icon">💎</div><div style="font-size:15px;font-family:'Cinzel',serif;">D20</div><div class="dice-name">Vingt faces</div></button>
+      </div>
+      <div class="dice-result-area">
+        <div class="dice-result-num" id="dice-num" style="color:var(--text-dim);font-size:40px;">—</div>
+        <div class="dice-result-label" id="dice-label">En attente</div>
+        <div class="dice-result-verdict" id="dice-verdict"></div>
+      </div>
+      <div id="dice-history" style="margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMER -->
+<div class="panel" id="panel-timer">
+  <div class="scroll" style="display:flex;justify-content:center;">
+    <div class="timer-panel" style="width:100%;max-width:460px;">
+      <div class="section-title" style="width:100%;text-align:center;">Minuteur</div>
+      <div class="timer-input-row">
+        <input class="input-field timer-input" id="timer-min" type="number" min="0" max="99" value="5" placeholder="mm"/>
+        <span class="timer-label">min</span>
+        <input class="input-field timer-input" id="timer-sec" type="number" min="0" max="59" value="0" placeholder="ss"/>
+        <span class="timer-label">sec</span>
+      </div>
+      <div class="timer-presets">
+        <div class="timer-preset" onclick="setTimer(1,0)">1 min</div>
+        <div class="timer-preset" onclick="setTimer(2,0)">2 min</div>
+        <div class="timer-preset" onclick="setTimer(5,0)">5 min</div>
+        <div class="timer-preset" onclick="setTimer(10,0)">10 min</div>
+        <div class="timer-preset" onclick="setTimer(0,30)">30 sec</div>
+      </div>
+      <div class="timer-display" id="timer-display">05:00</div>
+      <div class="timer-progress"><div class="timer-progress-bar" id="timer-bar" style="width:100%;"></div></div>
+      <div class="timer-controls">
+        <button class="btn" id="timer-start-btn" onclick="timerToggle()">▶ Démarrer</button>
+        <button class="btn" onclick="timerReset()">↺ Reset</button>
+      </div>
+      <div id="timer-label-display" style="font-size:12px;color:var(--text-dim);font-style:italic;text-align:center;min-height:18px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="panel" id="panel-notes">
+  <div class="notes-toolbar">
+    <div class="section-title">Notes de session</div>
+    <div class="notes-search-row">
+      <input class="input-field notes-search" id="notes-search" placeholder="Rechercher..." oninput="renderNotes()"/>
+      <input class="input-field" id="note-new-title" placeholder="Titre de la note..." style="width:180px;"/>
+      <div class="tag-selector">
+        <div class="tag-dot selected" style="background:#c9a84c;" data-tag="gold" onclick="selectNoteTag('gold',this)" title="Or"></div>
+        <div class="tag-dot" style="background:#c24a4a;" data-tag="red" onclick="selectNoteTag('red',this)" title="Rouge"></div>
+        <div class="tag-dot" style="background:#5a9b5a;" data-tag="green" onclick="selectNoteTag('green',this)" title="Vert"></div>
+        <div class="tag-dot" style="background:#6a8acf;" data-tag="blue" onclick="selectNoteTag('blue',this)" title="Bleu"></div>
+        <div class="tag-dot" style="background:#8a7acf;" data-tag="purple" onclick="selectNoteTag('purple',this)" title="Violet"></div>
+      </div>
+      <button class="btn" onclick="addNote()">+ Note</button>
+      <button class="btn danger" onclick="clearAllNotes()">Tout effacer</button>
+    </div>
+  </div>
+  <div class="notes-grid" id="notes-container"></div>
+</div>
+
+<!-- SOUNDBOARD -->
+<div class="panel" id="panel-sound">
+  <div class="scroll">
+    <div class="section-title">Soundboard</div>
+    <div class="sound-import-row">
+      <label class="file-label" for="sound-file-input">📁 Importer des sons</label>
+      <input type="file" id="sound-file-input" accept="audio/*" multiple style="display:none;" onchange="importSounds(event)"/>
+      <span style="font-size:12px;color:var(--text-dim);font-style:italic;">mp3, wav, ogg, m4a</span>
+      <button class="btn danger" onclick="stopAllSounds()" style="margin-left:auto;">⏹ Stop tout</button>
+    </div>
+    <div class="sound-grid" id="sound-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;font-size:13px;">Aucun son importé.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF -->
+<div class="panel" id="panel-pdf">
+  <div style="padding:16px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
+    <div class="section-title">Visionneuse PDF</div>
+    <div class="pdf-top">
+      <label class="file-label" for="pdf-file-input">📄 Importer un PDF</label>
+      <input type="file" id="pdf-file-input" accept=".pdf" multiple style="display:none;" onchange="importPDFs(event)"/>
+    </div>
+    <div class="pdf-list" id="pdf-tabs"></div>
+    <div class="pdf-viewer" id="pdf-viewer">
+      <div class="pdf-empty"><div style="font-size:36px;">📄</div><div style="font-size:12px;color:var(--text-dim);">Importer un PDF pour l'afficher ici</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MESSAGES MJ -->
+<div class="panel" id="panel-messages">
+  <div class="msg-grid" style="display:grid;flex:1;overflow:hidden;">
+    <div class="msg-sidebar">
+      <div class="fiche-cat">Joueurs</div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('zmotick',this)" id="msg-link-zmotick">
+        <div class="msg-player-name">Zmotick</div>
+        <div class="msg-player-char">Cpt. Pill</div>
+      </div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('nj',this)" id="msg-link-nj">
+        <div class="msg-player-name">NJ</div>
+        <div class="msg-player-char">Nadia Mole</div>
+      </div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('luc',this)" id="msg-link-luc">
+        <div class="msg-player-name">Luc</div>
+        <div class="msg-player-char">Mickey Dawn</div>
+      </div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('julie',this)" id="msg-link-julie">
+        <div class="msg-player-name">Julie</div>
+        <div class="msg-player-char">Pietra Wolof</div>
+      </div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('gagane',this)" id="msg-link-gagane">
+        <div class="msg-player-name">Gagane</div>
+        <div class="msg-player-char">Pamela Rosinante</div>
+      </div>
+      <div class="fiche-cat" style="margin-top:16px;">Broadcast</div>
+      <div class="msg-player-link" onclick="selectMsgPlayer('_all',this)" id="msg-link-_all">
+        <div class="msg-player-name">→ Tous</div>
+        <div class="msg-player-char">Message groupé</div>
+      </div>
+    </div>
+    <div class="msg-content" id="msg-content">
+      <div class="msg-empty">
+        <div style="font-size:28px;">✉</div>
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;">Sélectionner un joueur</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- end .main -->
+
+<div id="pwa-install-banner">
+  <p><strong>Installer l'app</strong><br>Accès hors ligne depuis l'écran d'accueil.</p>
+  <button id="pwa-install-btn">Installer</button>
+  <button id="pwa-install-dismiss">✕</button>
+</div>
+
+<script>
+// ===== CLOCK =====
+function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');}
+setInterval(updateClock,1000);updateClock();
+
+// ===== NAV =====
+function showPanel(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ===== WEATHER =====
+const weatherLabels={'🌫️':'Brume','🌧️':'Pluie','⛈️':'Orage','🌙':'Nuit calme','☀️':'Jour calme','🌊':'Mer agitée','🔥':'Tension'};
+function toggleWeatherMenu(){document.getElementById('weather-menu').classList.toggle('open');}
+function setWeather(icon,label){
+  document.getElementById('weather-badge').textContent=icon;
+  document.getElementById('weather-menu').classList.remove('open');
+  localStorage.setItem('weather',icon);
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#weather-badge')&&!e.target.closest('#weather-menu'))document.getElementById('weather-menu').classList.remove('open');});
+const savedWeather=localStorage.getItem('weather');
+if(savedWeather)document.getElementById('weather-badge').textContent=savedWeather;
+
+// ===== YOUTUBE =====
+let ytQueue=JSON.parse(localStorage.getItem('yt_queue')||'[]');
+let ytCurrentIdx=-1;
+function getEmbedUrl(url){
+  const listM=url.match(/list=([a-zA-Z0-9_-]+)/);
+  const vidM=url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  let embed='https://www.youtube.com/embed/';
+  if(vidM){embed+=vidM[1]+'?autoplay=1&rel=0';if(listM)embed+='&list='+listM[1];}
+  else if(listM){embed+='videoseries?list='+listM[1]+'&autoplay=1';}
+  else return null;
+  return embed;
+}
+function loadYT(url,label){
+  const u=url||document.getElementById('yt-url').value.trim();
+  if(!u)return;
+  const embed=getEmbedUrl(u);
+  if(!embed){alert('URL YouTube invalide');return;}
+  document.getElementById('yt-container').innerHTML=`<iframe src="${embed}" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+  document.getElementById('yt-url').value='';document.getElementById('yt-label').value='';
+}
+function addToQueue(){
+  const url=document.getElementById('yt-url').value.trim();
+  const label=document.getElementById('yt-label').value.trim()||url;
+  if(!url)return;
+  ytQueue.push({url,label});localStorage.setItem('yt_queue',JSON.stringify(ytQueue));renderQueue();
+  document.getElementById('yt-url').value='';document.getElementById('yt-label').value='';
+}
+function renderQueue(){
+  const el=document.getElementById('yt-queue');
+  if(!ytQueue.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="section-title" style="margin-top:14px;">File d\'attente ('+ytQueue.length+')</div>'+
+    ytQueue.map((item,i)=>`<div class="queue-item ${i===ytCurrentIdx?'playing':''}" onclick="playFromQueue(${i})"><span class="queue-label">${i===ytCurrentIdx?'▶ ':''}${item.label}</span><button class="queue-btn del" onclick="event.stopPropagation();removeFromQueue(${i})">✕</button></div>`).join('');
+}
+function playFromQueue(i){ytCurrentIdx=i;loadYT(ytQueue[i].url,ytQueue[i].label);renderQueue();}
+function removeFromQueue(i){ytQueue.splice(i,1);localStorage.setItem('yt_queue',JSON.stringify(ytQueue));renderQueue();}
+renderQueue();
+
+// ===== CARTE =====
+const mapPins=[
+  {id:'port',label:'Port',x:78,y:28,cls:'',fiche:'port',hint:'Humide, brumeux, bruyant.'},
+  {id:'eglise',label:'Église Yihit',x:48,y:40,cls:'neutre',fiche:'eglise',hint:'Zone neutre. Père Spencer.'},
+  {id:'rosalia',label:'Rosalia',x:18,y:76,cls:'rosinante',fiche:'rosalia',hint:'Bar & maison de joie. Pamela.'},
+  {id:'goldmitaine',label:'Gold Mitaine',x:50,y:76,cls:'carnibal',fiche:'goldmitaine',hint:'Casino Carnibal. Arène en dessous.'},
+  {id:'domrosinante',label:'D. Rosinante',x:18,y:58,cls:'rosinante',fiche:'domrosinante',hint:'Manoir blanc. Pio & Pietra.'},
+  {id:'domcarnibal',label:'D. Carnibal',x:74,y:68,cls:'carnibal',fiche:'domcarnibal',hint:'Manoir d\'obsidienne. Auguste.'},
+  {id:'commissariat',label:'Commissariat',x:62,y:42,cls:'police',fiche:'commissariat',hint:'Néon blafard, odeur de café.'},
+  {id:'galerie',label:'Simonetta',x:72,y:18,cls:'',fiche:'galerie',hint:'Galerie d\'art. Zone neutre.'},
+  {id:'usine',label:'Usine',x:14,y:30,cls:'carnibal',fiche:'usine',hint:'Usine de textile. Scène finale.'},
+  {id:'legiste',label:'Légiste',x:68,y:48,cls:'police',fiche:'legiste',hint:'Dr. McCullen. Bureau des morts.'},
+];
+
+let mapLoaded=false;
+function loadMapImage(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById('map-img');
+    img.src=e.target.result;
+    localStorage.setItem('map_img',e.target.result);
+    document.getElementById('map-upload-overlay').style.display='none';
+    mapLoaded=true;
+    renderPins();
+  };
+  reader.readAsDataURL(file);
+}
+function renderPins(){
+  const wrap=document.getElementById('map-wrap');
+  const pinsDiv=document.getElementById('map-pins');
+  pinsDiv.innerHTML=mapPins.map(p=>`
+    <div class="map-pin ${p.cls}" style="left:${p.x}%;top:${p.y}%;" onclick="showPopup('${p.id}')">
+      <div class="map-pin-dot"></div>
+      <div class="map-pin-label">${p.label}</div>
+    </div>`).join('');
+}
+function showPopup(id){
+  const p=mapPins.find(x=>x.id===id);if(!p)return;
+  const popup=document.getElementById('map-popup');
+  const wrap=document.getElementById('map-wrap');
+  document.getElementById('popup-title').textContent=p.label;
+  document.getElementById('popup-sub').textContent=p.cls?p.cls.charAt(0).toUpperCase()+p.cls.slice(1):'Neutre';
+  document.getElementById('popup-hint').textContent=p.hint;
+  const gotoBtn=document.getElementById('popup-goto');
+  gotoBtn.onclick=()=>{
+    closePopup();
+    document.querySelector('[onclick*="showPanel(\'fiches\'"]').click();
+    setTimeout(()=>{
+      const link=document.querySelector(`.fiche-link[onclick*="${p.fiche}"]`);
+      if(link)link.click();
+    },100);
+  };
+  // Position popup near pin but within bounds
+  let left=parseFloat(p.x);let top=parseFloat(p.y);
+  if(left>60)left-=22;else left+=2;
+  if(top>60)top-=20;else top+=5;
+  popup.style.left=left+'%';popup.style.top=top+'%';
+  popup.style.display='block';
+}
+function closePopup(){document.getElementById('map-popup').style.display='none';}
+// Try restoring saved map
+const savedMap=localStorage.getItem('map_img');
+if(savedMap){
+  document.getElementById('map-img').src=savedMap;
+  document.getElementById('map-upload-overlay').style.display='none';
+  mapLoaded=true;
+  renderPins();
+}
+
+// ===== FICHES =====
+const fiches={
+  port:{title:'Le Port',sub:'Lieu · Mixte Carnibal / Rosinante',tags:[['carnibal','Carnibal'],['rosinante','Rosinante']],sections:[{label:'Ambiance',text:'Humide, brumeux, bruyant.'},{label:'Espace',text:'Préfabriqués et conteneurs. Emblème rose ou sanglier sur certains. Trois pontons.'},{label:'PNJ',list:[{name:'Jimmy O\'Conel',desc:'Docker ~40 ans. Famille avant tout. Zéro affaire louche.'},{name:'Phillipe Martins',desc:'Docker ~30 ans. Cherche une femme riche pour arrêter de travailler.'},{name:'Micha Loviensko',desc:'Docker ~40 ans. Ancien cambrioleur. Veut la paix.'}]},{label:'Note MJ',text:'Rien vu des corps. Savent que les deux familles utilisent le port.'}]},
+  commissariat:{title:'Le Commissariat',sub:'Lieu · Police',tags:[['police','Police']],sections:[{label:'Ambiance',text:'Néon blafard, odeur de café. Cinq bureaux, dossiers partout.'},{label:'Espace',text:'Pièce principale + repos + armurerie + bureau du Commissaire.'},{label:'PNJ',list:[{name:'Commissaire Iscariote',desc:'Voir fiche. Réceptacle de Seth.'},{name:'Capitaine Edward Pill',desc:'Personnage de Zmotick.'},{name:'Adj. Nono Pitichiet',desc:'Bon gars simplet. Idolâtre Pill. Brun, 1m70. Honneur de policier intouchable.'},{name:'Off. Puck / Traoret / Oloviestro',desc:'—'}]}]},
+  goldmitaine:{title:'Le Gold Mitaine',sub:'Lieu · Casino Carnibal',tags:[['carnibal','Carnibal']],sections:[{label:'Ambiance',text:'Tabac et whisky. Classe mondaine, danger silencieux.'},{label:'Espace',text:'Vestibule → Bar (noyer, canapés sanglier or) → BlackJack + machines → Stockage → Arène.'},{label:'PNJ',list:[{name:'Ocho Malaviemiento',desc:'Barman 10 ans. Homme de confiance d\'Elaine. Manie les armes.'},{name:'Viz',desc:'Videur. Grand, musclé, métis. 4 filles. Accord Elaine : famille intouchable.'},{name:'Lou Valazur',desc:'Croupière 25 ans. Rousse, yeux verts. Vénale. Remplace Sylvia.'},{name:'Magnolia Olta',desc:'Directrice. Brune. Confiance totale d\'Elaine et Auguste.'}]},{label:'Accès Arène',text:'Derrière machines à sous → stockage → escalier au fond.'}]},
+  arene:{title:'L\'Arène Clandestine',sub:'Lieu · Carnibal — sous le Gold Mitaine',tags:[['carnibal','Carnibal']],sections:[{label:'Accès',text:'Escalier dans la réserve du Gold Mitaine.'},{label:'Ambiance',text:'Odeur de fer, silence de plomb. Couloir de portes métalliques. Ring néon bleuté, taches de sang, gradins.'},{label:'PNJ',list:[{name:'D.Dice',desc:'27 ans. Gérant. Vrai nom inconnu même d\'Auguste. Boxe + couteaux. Aucune empathie.'},{name:'Jimmy',desc:'25 ans. Roux, irlandais, bègue. Lames de rasoir aux ongles. Instinct de tueur.'},{name:'Billy "Buffle"',desc:'21 ans. Blond, russe, costaud. Lutteur. N\'hésite pas à mordre.'},{name:'Ana',desc:'21 ans. Taekwondo ITF. Ses pieds suffisent généralement.'},{name:'Lola',desc:'16 ans. Afro-américaine. Coup de poing = coup de fusil.'},{name:'Yu',desc:'24 ans. Coréen. Boxe vitesse + points vitaux.'}]}]},
+  domcarnibal:{title:'Domaine Carnibal',sub:'Lieu · Résidence Auguste Carnibal',tags:[['carnibal','Carnibal']],sections:[{label:'Ambiance',text:'Simple. Pesante. Pouvoir.'},{label:'Espace',text:'Manoir d\'obsidienne. Statues sanglier d\'Erymanthe à l\'entrée. Hall chandeliers + art. Banquet 1er étage. Galerie Auguste.'},{label:'PNJ',list:[{name:'Mathilda Ouktolos',desc:'Femme de maison. 5 ans, 30 ans.'},{name:'Arthur Furuos',desc:'Homme de maison. 25 ans de service, 55 ans.'},{name:'Philibert Nariosio',desc:'Galeriste. Pervers, beau parleur. N\'aime pas Auguste. 65 ans.'},{name:'Ken & Lia Carnibal',desc:'Hommes/femmes de main. Anciens enfants perdus. Donnent leur vie pour Auguste.'}]}]},
+  domrosinante:{title:'Domaine Rosinante',sub:'Lieu · Résidence Pio & Pietra',tags:[['rosinante','Rosinante']],sections:[{label:'Ambiance',text:'Écrasant. Puissant. Apaisant.'},{label:'Espace',text:'Manoir pierres blanches. Blanc, rouge, or. Escalier marbre + portrait de Pio. Ligne d\'or sur les murs. Jardin : sépulture d\'Esmeralda sous cloche de verre.'},{label:'PNJ',list:[{name:'Myria Sool',desc:'Femme de maison. 40 ans de service.'},{name:'Ernest Poichon',desc:'Jardinier. Lent mais habile. 50 ans de service.'},{name:'Sylvio & Luiji Arbuso',desc:'Hommes de main. Donnent leur vie pour Pio.'}]}]},
+  rosalia:{title:'Le Rosalia',sub:'Lieu · Bar / Maison de joie — Rosinante',tags:[['rosinante','Rosinante']],sections:[{label:'Ambiance',text:'Effluves de roses, lumière dorée, gramophone jazz.'},{label:'Espace',text:'RDC : bar hêtre, tabourets, baie vitrée + panier chat. Étage : couloir 10 portes → bureau Pamela au fond.'},{label:'PNJ',list:[{name:'Camélia Mio',desc:'Bar. Amie d\'enfance de Pamela. Élancée, brune.'},{name:'Prima Lovanou',desc:'Cadette. Franc-parlé. Petite, rousse.'},{name:'Tamaria Novisiemento',desc:'Doyenne. Grande sœur. Blonde. Excellente informatrice.'},{name:'Valéria Pavlova',desc:'Ancienne Carnibal protégée par Pamela. Grande, brune.'}]}]},
+  eglise:{title:'Église Sainte Yihit',sub:'Lieu · Zone neutre',tags:[['neutre','Neutre']],sections:[{label:'Ambiance',text:'La définition du calme. La respiration semble déranger.'},{label:'Espace',text:'Deux rangées de bancs, frise de vitraux. Bureau avec bibliothèque sur le monde invisible.'},{label:'PNJ',list:[{name:'Père Spencer',desc:'Homme de principe. Aucun conflit de gangs toléré. Seule zone neutre de la ville.'}]}]},
+  galerie:{title:'Le Charme de Simonetta',sub:'Lieu · Galerie d\'art — Neutre',tags:[['neutre','Neutre']],sections:[{label:'Ambiance',text:'Calme, sérénité, apaisement. Les tableaux attrapent les regards.'},{label:'Œuvres',text:'Thor pêche Jormungand (Füssli), Saturne dévorant son fils (Goya), Circé (Waterhouse), L\'île des Morts (Böcklin), La Dame à la Licorne, Stèle de Néfertiabet, et autres.'}]},
+  usine:{title:'Usine de Textile',sub:'Lieu · Scène finale',tags:[['carnibal','Carnibal']],sections:[{label:'Ambiance',text:'Machines à l\'arrêt. Formes dans l\'ombre qui attendent. Odeur de soufre à mesure qu\'on avance.'},{label:'Espace',text:'Machines au rez-de-chaussée. Bureaux au 1er étage avec lumière. Chaînes qui pendent du plafond.'},{label:'⚠ Note MJ',text:'<strong>Jet de Dextérité :</strong> Réussi = rien / Échoué = l\'un des joueurs cogne une chaîne. Bruit métallique dans toute l\'usine. Seth et Iscariote au 1er étage.'}]},
+  iscariote:{title:'Commissaire Arno Iscariote',sub:'Personnage · Police',tags:[['police','Police'],['divin','Réceptacle Seth']],sections:[{label:'Physique',text:'Grand — Mat — Musclé'},{label:'Caractère',text:'Ancien militaire. Venu se reposer à Portbay Valley. Retrouvé Pill. Ensemble ils maintiennent l\'équilibre face aux deux Familles.'},{label:'⚠ Note MJ',text:'<strong>Seth l\'utilise comme réceptacle.</strong> Iscariote subit. Tient le Sceptre Ouas main gauche lors de la scène finale.'}]},
+  elaine:{title:'Elaine Carnibal',sub:'Personnage · Décédée',tags:[['carnibal','Carnibal']],sections:[{label:'Physique',text:'Élancée — Regard froid — Pâle — Costume trois pièces — Tatouage sanglier dans le cou'},{label:'Caractère',text:'Argent, pouvoir, respect à sens unique. Un ennemi = une personne de trop. Utilisait Sigmurd sur coup de colère. Pouvait être compatissante envers les employés du Gold Mitaine.'}]},
+  sigmurd:{title:'Sigmurd Von Damielo',sub:'Personnage · Tueur à gages (décédé)',tags:[['carnibal','Carnibal']],sections:[{label:'Physique',text:'Grand et maigre — Nez pointu — Lunettes rondes — Cheveux longs gras — Doigts fins'},{label:'Histoire',text:'Fasciné par la mort. Massacre familial à 17 ans (Noël). Recruté Carnibal à 19 ans. A servi 35 ans jusqu\'à sa mort dans la ruelle à 54 ans.'}]},
+  sylvia:{title:'Sylvia Mole',sub:'Personnage · Gold Mitaine (décédée)',tags:[['carnibal','Carnibal']],sections:[{label:'Physique',text:'Petite — Visage rond — Fumeuse — Blonde — Yeux noirs'},{label:'Caractère',text:'Complexe d\'infériorité profond. Admirait sa sœur Nadia. Trouvait au Gold Mitaine une valeur. Rêvait de voyager. Ce mal-être lui a coûté la vie.'}]},
+  ankh:{title:'La Croix d\'Ankh',sub:'Objet · Divin',tags:[['divin','Divin']],sections:[{label:'Obtention',text:'Offerte par la Moire ou Morphée selon la confiance accordée aux joueurs.'},{label:'Pouvoirs',text:'Guérison accélérée si le porteur y croit. Réceptacle pour bannir le mal.'},{label:'Rituel Seth',text:'Immobiliser Seth puis réciter : <em>"Ankh, symbole de vie, que celle qui s\'écoule en moi parjure le mal qui se confronte à moi. Ankh soit le tombeau du mal."</em> La croix passe de l\'or à l\'obsidienne. Se brise volontairement pour libérer.'}]},
+  sceptre:{title:'Le Sceptre Ouas',sub:'Objet · Divin — Seth',tags:[['divin','Divin']],sections:[{label:'Description',text:'Long bâton de bois avec veines d\'or. Attrape et extrait le venin des serpents.'},{label:'Obtention',text:'Extension de Seth. Toujours avec lui. Reste dans l\'usine après le combat.'},{label:'Pouvoir joueur',text:'Symbole apparaît dans la main du porteur. Charge électrique avec concentration. Douleur terrible au début.'}]},
+  vengeance:{title:'La Vengeance Carnibal',sub:'Événement',tags:[],sections:[{label:'Contexte',text:'<strong>"Un enfant pour un enfant."</strong> Auguste n\'a plus d\'héritier. La Famille Rosinante a encore Pamela.'},{label:'Option 1 — Voiture piégée',text:'D.Dice mobilise un enfant perdu. Jet Concentration : réussi = bruit mécanique / échoué = rien. Bombe s\'active au contact. Explosion avant, pare-brise, feu, portières bloquées.'},{label:'Option 2 — Attentat Rosalia',text:'Voiture qui fonce dans le Rosalia. Jet Concentration : réussi = bruit moteur qui approche. Explosion, murs, souffle, feu, risque effondrement étage.'}]},
+  poursuite:{title:'La Course Poursuite',sub:'Événement',tags:[],sections:[{label:'Déclencheur',text:'Pitichiet prend la voiture du groupe en filature sur ordre du Capitaine Pill.'},{label:'Note MJ',text:'Bonne façon de forcer les joueurs vers un endroit précis si besoin.'}]},
+  legiste:{title:'Rencontre avec le Légiste',sub:'Événement / Lieu',tags:[],sections:[{label:'Timing',text:'Si visite juste après la scène d\'intro : McCullen n\'a que peu d\'infos encore.'},{label:'Dr. Robert McCullen',text:'Cheveux gris, 1m80, moustache, lunettes rectangulaires, blouse sur costume vert. Peu loquace. Croit que les humains ne disent la vérité qu\'une fois morts. <strong>Il est malade et le cache à sa fille.</strong>'},{label:'Groupe complet',text:'Fixe les Rosinante. Regard interrogateur au Capitaine. Selon justification : infos complètes, partielles, ou prévient Iscariote dans le dos.'},{label:'Capitaine seul',text:'Jugement rapide puis coopération pour l\'enquête.'}]},
+};
+
+function showFiche(id,el){
+  document.querySelectorAll('.fiche-link').forEach(l=>l.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const f=fiches[id];if(!f)return;
+  const tags=f.tags.map(([cls,label])=>`<span class="tag-pill ${cls}">${label}</span>`).join('');
+  const sections=f.sections.map(s=>{
+    if(s.list)return`<div class="fiche-section"><div class="fiche-label">${s.label}</div><ul class="pnj-list">${s.list.map(p=>`<li><span class="pnj-name">${p.name}</span> — ${p.desc}</li>`).join('')}</ul></div>`;
+    return`<div class="fiche-section"><div class="fiche-label">${s.label}</div><div class="fiche-text">${s.text}</div></div>`;
+  }).join('');
+  document.getElementById('fiche-display').innerHTML=`<div class="fiche-title">${f.title}</div><div class="fiche-subtitle">${f.sub}</div><div style="margin-bottom:12px;">${tags}</div>${sections}`;
+}
+
+// ===== JOUEURS =====
+const joueurs={
+  zmotick:{player:'Zmotick',char:'Capitaine Edward Pill',intro:'Ancien militaire reconverti dans la police de Portbay Valley. Homme de méthode, il maintient l\'équilibre de la ville face aux deux Familles. Ce matin, une affaire particulièrement sombre l\'attend au port.'},
+  nj:{player:'NJ',char:'Nadia Mole',intro:'Propriétaire d\'une boutique. N\'a pas dormi depuis l\'appel de sa sœur Sylvia, croupière au Gold Mitaine. Elle cherche des réponses, et l\'air marin du port ce matin pourrait en apporter.'},
+  luc:{player:'Luc',char:'Mickaël "Mickey" Dawn',intro:'Un homme qui encaisse les coups. Ce matin, les frères Gorilles lui ont rendu visite au sujet d\'Elaine. Il a menti et cherche maintenant à comprendre pourquoi les voitures de police filent vers la plage.'},
+  julie:{player:'Julie',char:'Pietra Wolof',intro:'Belle-mère de Pamela, envoyée par Pio pour récolter des informations sur la disparition de Pierrot. Elle incarne la puissance et le raffinement de la Famille Rosinante, même dans les situations les plus délicates.'},
+  gagane:{player:'Gagane (Morgane)',char:'Pamela Rosinante',intro:'Fille de Pio, gérante du Rosalia. Son père l\'a appelée ce matin : Pierrot n\'est pas rentré. Son réseau indique que la police est au port. Elle s\'y rend — et trouve sa belle-mère sur place.'},
+};
+
+function showJoueur(id,el){
+  document.querySelectorAll('.joueur-link').forEach(l=>l.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const j=joueurs[id];
+  const notes=localStorage.getItem('joueur_notes_'+id)||'';
+  const inv=JSON.parse(localStorage.getItem('joueur_inv_'+id)||'[]');
+  const baseUrl=window.location.href.split('?')[0];
+  const playerUrl=baseUrl+'?player='+id;
+
+  document.getElementById('joueur-display').innerHTML=`
+    <div class="joueur-player">Joueur · ${j.player}</div>
+    <div class="joueur-title">${j.char}</div>
+    <div class="fiche-section"><div class="fiche-label">Présentation</div><div class="fiche-text">${j.intro}</div></div>
+    <div class="lore-box">Vous incarnez un personnage vivant dans un rêve. Vous vous retrouvez ici sur ordre du dieu Morphée pour tenter de sauver l'esprit de votre ami.</div>
+    <div class="rules-box"><strong style="color:var(--gold2)">Règles :</strong> Vous êtes libres de vos actions. Pour en réaliser certaines, un lancé de dés vous sera demandé. Sentez-vous libre de proposer des actions.</div>
+    <div class="joueur-block">
+      <div class="joueur-block-header">Notes <button class="inv-btn" onclick="saveJoueurNotes('${id}')">Sauvegarder</button></div>
+      <textarea class="joueur-textarea" id="joueur-notes-${id}" placeholder="Notes sur le personnage...">${notes}</textarea>
+    </div>
+    <div class="joueur-block">
+      <div class="joueur-block-header">Inventaire</div>
+      <div class="inv-list" id="inv-list-${id}">${inv.length===0?'<div style="padding:7px 0;color:var(--text-dim);font-style:italic;font-size:13px;">Vide</div>':inv.map((item,i)=>`<div class="inv-item"><span>${item}</span><button class="inv-del" onclick="removeInvItem('${id}',${i})">✕</button></div>`).join('')}</div>
+      <div class="inv-add-row"><input class="inv-input" id="inv-input-${id}" placeholder="Ajouter un objet..." onkeydown="if(event.key==='Enter')addInvItem('${id}')"/><button class="inv-btn" onclick="addInvItem('${id}')">+</button></div>
+    </div>
+    <div class="joueur-block">
+      <div class="joueur-block-header">QR Code — Fiche joueur</div>
+      <div class="qr-area">
+        <canvas id="qr-canvas" width="120" height="120"></canvas>
+        <div class="qr-url">${playerUrl}</div>
+        <div style="font-size:11px;color:var(--text-dim);font-style:italic;text-align:center;">À scanner par le joueur pour accéder à sa fiche</div>
+      </div>
+    </div>`;
+  generateQR(playerUrl,'qr-canvas');
+}
+
+function saveJoueurNotes(id){
+  const val=document.getElementById('joueur-notes-'+id).value;
+  localStorage.setItem('joueur_notes_'+id,val);
+  const btn=event.currentTarget;btn.textContent='✓';setTimeout(()=>btn.textContent='Sauvegarder',1500);
+}
+function addInvItem(id){
+  const input=document.getElementById('inv-input-'+id);
+  const val=input.value.trim();if(!val)return;
+  const inv=JSON.parse(localStorage.getItem('joueur_inv_'+id)||'[]');
+  inv.push(val);localStorage.setItem('joueur_inv_'+id,JSON.stringify(inv));
+  input.value='';
+  const activeLink=document.querySelector('.joueur-link.active');
+  if(activeLink)showJoueur(id,activeLink);
+}
+function removeInvItem(id,idx){
+  const inv=JSON.parse(localStorage.getItem('joueur_inv_'+id)||'[]');
+  inv.splice(idx,1);localStorage.setItem('joueur_inv_'+id,JSON.stringify(inv));
+  const activeLink=document.querySelector('.joueur-link.active');
+  if(activeLink)showJoueur(id,activeLink);
+}
+
+// QR Code generator (simple, no lib)
+function generateQR(text,canvasId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#1a1714';ctx.fillRect(0,0,120,120);
+  ctx.fillStyle='var(--gold)';ctx.font='9px monospace';
+  ctx.fillText('QR:',10,20);
+  // Simple visual placeholder with URL encoded visually
+  const hash=text.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0)|0,0);
+  const seed=Math.abs(hash);
+  const size=10;const cols=11;const rows=11;const offx=5;const offy=25;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const val=(seed^(r*37+c*17)^(r*c))%3;
+    if(val===0){ctx.fillStyle='#c9a84c';ctx.fillRect(offx+c*size,offy+r*size,size-1,size-1);}
+  }
+  // Corner squares
+  [[0,0],[0,8],[8,0]].forEach(([r,c])=>{
+    ctx.fillStyle='#c9a84c';ctx.fillRect(offx+c*size-1,offy+r*size-1,size*3+2,size*3+2);
+    ctx.fillStyle='#1a1714';ctx.fillRect(offx+c*size+1,offy+r*size+1,size*3-2,size*3-2);
+    ctx.fillStyle='#c9a84c';ctx.fillRect(offx+c*size+3,offy+r*size+3,size*3-6,size*3-6);
+  });
+}
+
+// ===== DÉS =====
+let diceHistory=[];
+function getThreshold(sides){
+  const el=document.getElementById('threshold-d'+sides);
+  return el?parseInt(el.value):sides===6?4:sides===10?7:12;
+}
+function rollDice(sides){
+  const result=Math.floor(Math.random()*sides)+1;
+  const numEl=document.getElementById('dice-num');
+  numEl.className='dice-result-num';void numEl.offsetWidth;
+  numEl.className='dice-result-num rolling';numEl.textContent=result;
+  document.getElementById('dice-label').textContent='D'+sides;
+  const threshold=getThreshold(sides);
+  const verdict=document.getElementById('dice-verdict');
+  if(sides===20&&result===20){verdict.textContent='✦ Succès Critique';verdict.className='dice-result-verdict verdict-success';}
+  else if(sides===20&&result===1){verdict.textContent='✧ Échec Critique';verdict.className='dice-result-verdict verdict-fail';}
+  else if(result>=threshold){verdict.textContent='Succès (≥'+threshold+')';verdict.className='dice-result-verdict verdict-success';}
+  else{verdict.textContent='Échec (<'+threshold+')';verdict.className='dice-result-verdict verdict-fail';}
+  const now=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  diceHistory.unshift({sides,result,time:now,threshold});
+  if(diceHistory.length>10)diceHistory.pop();
+  document.getElementById('dice-history').innerHTML=diceHistory.map(h=>`<div class="dice-hist-row"><span>D${h.sides}</span><span style="color:${h.result>=h.threshold?'var(--green2)':'var(--red2)'};font-weight:600;">${h.result}</span><span>${h.time}</span></div>`).join('');
+}
+
+// ===== TIMER =====
+let timerInterval=null;let timerRemaining=0;let timerTotal=0;let timerRunning=false;
+function setTimer(m,s){
+  document.getElementById('timer-min').value=m;
+  document.getElementById('timer-sec').value=s;
+  timerReset();
+}
+function timerReset(){
+  clearInterval(timerInterval);timerRunning=false;
+  const m=parseInt(document.getElementById('timer-min').value)||0;
+  const s=parseInt(document.getElementById('timer-sec').value)||0;
+  timerTotal=timerRemaining=m*60+s;
+  updateTimerDisplay();
+  document.getElementById('timer-start-btn').textContent='▶ Démarrer';
+  document.getElementById('timer-bar').style.width='100%';
+  document.getElementById('timer-bar').classList.remove('urgent');
+  document.getElementById('timer-display').classList.remove('urgent');
+}
+function timerToggle(){
+  if(timerRunning){
+    clearInterval(timerInterval);timerRunning=false;
+    document.getElementById('timer-start-btn').textContent='▶ Reprendre';
+  } else {
+    if(timerRemaining<=0)timerReset();
+    timerRunning=true;
+    document.getElementById('timer-start-btn').textContent='⏸ Pause';
+    timerInterval=setInterval(()=>{
+      timerRemaining--;updateTimerDisplay();
+      const pct=timerTotal>0?timerRemaining/timerTotal*100:0;
+      const bar=document.getElementById('timer-bar');
+      bar.style.width=pct+'%';
+      if(timerRemaining<=10){
+        bar.classList.add('urgent');
+        document.getElementById('timer-display').classList.add('urgent');
+      }
+      if(timerRemaining<=0){
+        clearInterval(timerInterval);timerRunning=false;
+        document.getElementById('timer-start-btn').textContent='▶ Démarrer';
+        timerAlert();
+      }
+    },1000);
+  }
+}
+function updateTimerDisplay(){
+  const m=Math.floor(timerRemaining/60);
+  const s=timerRemaining%60;
+  document.getElementById('timer-display').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+function timerAlert(){
+  try{const ctx=new AudioContext();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=880;gain.gain.value=0.3;osc.start();gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.8);osc.stop(ctx.currentTime+0.8);}catch(e){}
+  document.getElementById('timer-label-display').textContent='⏰ Temps écoulé !';
+}
+
+// ===== NOTES =====
+let notes=JSON.parse(localStorage.getItem('mj_notes')||'[]');
+let selectedNoteTag='gold';
+const tagColors={gold:'#c9a84c',red:'#c24a4a',green:'#5a9b5a',blue:'#6a8acf',purple:'#8a7acf'};
+function selectNoteTag(tag,el){
+  selectedNoteTag=tag;
+  document.querySelectorAll('.tag-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function renderNotes(){
+  const search=document.getElementById('notes-search').value.toLowerCase();
+  const container=document.getElementById('notes-container');
+  const filtered=notes.filter(n=>!search||n.title.toLowerCase().includes(search)||n.content.toLowerCase().includes(search));
+  if(!filtered.length){
+    container.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;font-size:13px;">${search?'Aucun résultat.':'Aucune note. Créez-en une ci-dessus.'}</div>`;
+    return;
+  }
+  container.innerHTML=filtered.map((note,i)=>{
+    const realIdx=notes.indexOf(note);
+    const color=tagColors[note.tag]||tagColors.gold;
+    return`<div class="note-card">
+      <div class="note-card-header">
+        <div class="note-tag-badge" style="background:${color};"></div>
+        <div class="note-card-title">${note.title}</div>
+        <button class="note-mini-btn" onclick="saveNote(${realIdx})" title="Sauvegarder">💾</button>
+        <button class="note-mini-btn" onclick="deleteNote(${realIdx})" title="Supprimer" style="color:var(--red2)">✕</button>
+      </div>
+      <textarea class="note-textarea" id="note-ta-${realIdx}" onblur="autoSaveNote(${realIdx})" placeholder="Écrire ici...">${note.content}</textarea>
+    </div>`;
+  }).join('');
+}
+function addNote(){
+  const title=document.getElementById('note-new-title').value.trim()||'Note '+(notes.length+1);
+  notes.push({title,content:'',tag:selectedNoteTag});
+  localStorage.setItem('mj_notes',JSON.stringify(notes));
+  document.getElementById('note-new-title').value='';
+  renderNotes();
+}
+function saveNote(i){notes[i].content=document.getElementById('note-ta-'+i).value;localStorage.setItem('mj_notes',JSON.stringify(notes));}
+function autoSaveNote(i){const el=document.getElementById('note-ta-'+i);if(el){notes[i].content=el.value;localStorage.setItem('mj_notes',JSON.stringify(notes));}}
+function deleteNote(i){notes.splice(i,1);localStorage.setItem('mj_notes',JSON.stringify(notes));renderNotes();}
+function clearAllNotes(){if(confirm('Effacer toutes les notes ?')){notes=[];localStorage.setItem('mj_notes',JSON.stringify(notes));renderNotes();}}
+renderNotes();
+
+// ===== SOUNDBOARD =====
+let sounds=[];
+function importSounds(event){
+  Array.from(event.target.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{sounds.push({name:file.name.replace(/\.[^/.]+$/,''),data:e.target.result,audio:null,playing:false,vol:0.8});renderSoundboard();};
+    reader.readAsDataURL(file);
+  });
+  event.target.value='';
+}
+function renderSoundboard(){
+  const grid=document.getElementById('sound-grid');
+  if(!sounds.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-style:italic;">Aucun son importé.</div>';return;}
+  grid.innerHTML=sounds.map((s,i)=>`
+    <div class="sound-tile ${s.playing?'playing':''}" onclick="toggleSound(${i})">
+      <button class="sound-del" onclick="event.stopPropagation();deleteSound(${i})">✕</button>
+      <div class="sound-icon">${s.playing?'🔊':'🔈'}</div>
+      <div class="sound-name">${s.name}</div>
+      <input type="range" class="sound-vol" min="0" max="1" step="0.05" value="${s.vol}" onclick="event.stopPropagation()" oninput="setVolume(${i},this.value)" title="Volume"/>
+    </div>`).join('');
+}
+function toggleSound(i){
+  const s=sounds[i];
+  if(s.playing&&s.audio){s.audio.pause();s.audio.currentTime=0;s.playing=false;}
+  else{if(s.audio){s.audio.pause();s.audio.currentTime=0;}s.audio=new Audio(s.data);s.audio.volume=s.vol;s.audio.onended=()=>{s.playing=false;renderSoundboard();};s.audio.play();s.playing=true;}
+  renderSoundboard();
+}
+function setVolume(i,val){sounds[i].vol=parseFloat(val);if(sounds[i].audio)sounds[i].audio.volume=sounds[i].vol;}
+function deleteSound(i){if(sounds[i].audio)sounds[i].audio.pause();sounds.splice(i,1);renderSoundboard();}
+function stopAllSounds(){sounds.forEach(s=>{if(s.audio){s.audio.pause();s.audio.currentTime=0;}s.playing=false;});renderSoundboard();}
+
+// ===== PDF =====
+let pdfs=[];let activePdf=-1;
+function importPDFs(event){
+  Array.from(event.target.files).forEach(file=>{
+    const url=URL.createObjectURL(file);
+    pdfs.push({name:file.name,url});
+    if(activePdf===-1)activePdf=pdfs.length-1;
+  });
+  renderPDFs();event.target.value='';
+}
+function renderPDFs(){
+  const tabs=document.getElementById('pdf-tabs');
+  const viewer=document.getElementById('pdf-viewer');
+  if(!pdfs.length){tabs.innerHTML='';viewer.innerHTML='<div class="pdf-empty"><div style="font-size:36px;">📄</div><div style="font-size:12px;">Importer un PDF</div></div>';return;}
+  tabs.innerHTML=pdfs.map((p,i)=>`<div class="pdf-tab ${i===activePdf?'active':''}" onclick="switchPdf(${i})"><span>${p.name}</span><span class="close-x" onclick="event.stopPropagation();closePdf(${i})">✕</span></div>`).join('');
+  if(activePdf>=0&&pdfs[activePdf])viewer.innerHTML=`<iframe src="${pdfs[activePdf].url}#toolbar=1" type="application/pdf"></iframe>`;
+}
+function switchPdf(i){activePdf=i;renderPDFs();}
+function closePdf(i){URL.revokeObjectURL(pdfs[i].url);pdfs.splice(i,1);if(activePdf>=pdfs.length)activePdf=pdfs.length-1;renderPDFs();}
+
+// ===== PWA =====
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('pwa-install-banner').style.display='flex';});
+document.getElementById('pwa-install-btn').addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('pwa-install-banner').style.display='none';});
+document.getElementById('pwa-install-dismiss').addEventListener('click',()=>document.getElementById('pwa-install-banner').style.display='none');
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3v-I_ujsomWR2ibnkLq_dETXlim6DVPE",
+  authDomain: "jdrupnos.firebaseapp.com",
+  projectId: "jdrupnos",
+  storageBucket: "jdrupnos.firebasestorage.app",
+  messagingSenderId: "482263745659",
+  appId: "1:482263745659:web:9abc3728f0d30e73504ede",
+  databaseURL: "https://jdrupnos-default-rtdb.firebaseio.com"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+const playerNames = {
+  zmotick: 'Capitaine Pill', nj: 'Nadia Mole',
+  luc: 'Mickey Dawn', julie: 'Pietra Wolof', gagane: 'Pamela Rosinante'
+};
+const allPlayers = ['zmotick','nj','luc','julie','gagane'];
+
+let currentMsgPlayer = null;
+let unreadCounts = {};
+let playerListeners = {};
+
+// Listen to all player threads
+allPlayers.forEach(pid => {
+  const r = ref(db, 'messages/' + pid);
+  onValue(r, snapshot => {
+    const data = snapshot.val();
+    if (!data) { unreadCounts[pid] = 0; }
+    else {
+      const msgs = Object.values(data);
+      unreadCounts[pid] = msgs.filter(m => m.from !== 'mj' && !m.read).length;
+    }
+    updateUnreadBadges();
+    if (currentMsgPlayer === pid) renderThread(pid, data);
+  });
+});
+
+function updateUnreadBadges() {
+  allPlayers.forEach(pid => {
+    const link = document.getElementById('msg-link-' + pid);
+    if (!link) return;
+    let badge = link.querySelector('.msg-unread-badge');
+    if (unreadCounts[pid] > 0) {
+      if (!badge) { badge = document.createElement('span'); badge.className = 'msg-unread-badge'; link.appendChild(badge); }
+      badge.textContent = unreadCounts[pid];
+    } else {
+      if (badge) badge.remove();
+    }
+  });
+  // Update nav button
+  const total = Object.values(unreadCounts).reduce((a,b) => a+b, 0);
+  const navBtn = document.getElementById('nav-messages');
+  if (navBtn) navBtn.innerHTML = total > 0 ? `✉ Messages <span class="msg-unread-dot"></span>` : '✉ Messages';
+}
+
+window.selectMsgPlayer = function(pid, el) {
+  document.querySelectorAll('.msg-player-link').forEach(l => l.classList.remove('active'));
+  el.classList.add('active');
+  currentMsgPlayer = pid;
+
+  if (pid === '_all') {
+    renderBroadcast();
+    return;
+  }
+
+  const content = document.getElementById('msg-content');
+  content.innerHTML = `
+    <div class="msg-header">
+      <span class="msg-header-title">${playerNames[pid] || pid}</span>
+      <span style="font-size:11px;color:var(--text-dim);font-family:'Cinzel',serif;letter-spacing:1px;">Fil privé</span>
+    </div>
+    <div class="msg-thread" id="msg-thread-${pid}">
+      <div style="text-align:center;color:var(--text-dim);font-size:12px;padding:20px;">Chargement...</div>
+    </div>
+    <div class="msg-compose">
+      <textarea class="msg-textarea" id="msg-compose-${pid}" placeholder="Message confidentiel à ${playerNames[pid]}..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+        <button class="btn" onclick="sendMjMsg('${pid}')">Envoyer →</button>
+      </div>
+    </div>`;
+
+  // Mark player replies as read
+  const r = ref(db, 'messages/' + pid);
+  onValue(r, snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+    Object.entries(data).forEach(([k, v]) => {
+      if (v.from !== 'mj' && !v.read) {
+        update(ref(db, 'messages/' + pid + '/' + k), { read: true });
+      }
+    });
+  }, { onlyOnce: true });
+};
+
+function renderThread(pid, data) {
+  const thread = document.getElementById('msg-thread-' + pid);
+  if (!thread) return;
+  if (!data) { thread.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:20px;">Aucun message.</div>'; return; }
+  const msgs = Object.entries(data).map(([k,v]) => ({...v,key:k}));
+  msgs.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+  thread.innerHTML = msgs.map(m => {
+    const fromMj = m.from === 'mj';
+    const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="msg-bubble ${fromMj?'from-mj':'from-player'}">
+      <div class="msg-bubble-meta">${fromMj?'MJ':playerNames[pid]||pid} · ${time}</div>
+      <div class="msg-bubble-text">${m.text}</div>
+    </div>`;
+  }).join('');
+  thread.scrollTop = thread.scrollHeight;
+}
+
+window.sendMjMsg = function(pid) {
+  const input = document.getElementById('msg-compose-' + pid);
+  const text = input.value.trim(); if (!text) return;
+  push(ref(db, 'messages/' + pid), {
+    from: 'mj', text, timestamp: Date.now(), read: false
+  });
+  input.value = '';
+};
+
+function renderBroadcast() {
+  const content = document.getElementById('msg-content');
+  content.innerHTML = `
+    <div class="msg-header">
+      <span class="msg-header-title">Message à tous</span>
+    </div>
+    <div class="msg-thread">
+      <div style="color:var(--text-dim);font-size:13px;line-height:1.7;">Ce message sera envoyé à <strong style="color:var(--gold2);">tous les joueurs simultanément</strong>. Chacun le recevra dans son fil privé.</div>
+    </div>
+    <div class="msg-compose">
+      <textarea class="msg-textarea" id="msg-compose-all" placeholder="Message pour tous les joueurs..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+        <button class="btn" onclick="sendBroadcast()">Envoyer à tous →</button>
+      </div>
+    </div>`;
+}
+
+window.sendBroadcast = function() {
+  const input = document.getElementById('msg-compose-all');
+  const text = input.value.trim(); if (!text) return;
+  allPlayers.forEach(pid => {
+    push(ref(db, 'messages/' + pid), {
+      from: 'mj', text, timestamp: Date.now(), read: false
+    });
+  });
+  input.value = '';
+};
+</script>
+
+</body>
+</html>
